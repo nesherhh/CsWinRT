@@ -101,8 +101,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AuthoringWinUITest", "Tests
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ObjectLifetimeTests.Lifted", "Tests\ObjectLifetimeTests\ObjectLifetimeTests.Lifted\ObjectLifetimeTests.Lifted\ObjectLifetimeTests.Lifted.csproj", "{3CF27C11-410F-44A3-B660-B52EC02FF35A}"
 EndProject
-Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "ObjectLifetimeTests.Lifted (Package)", "Tests\ObjectLifetimeTests\ObjectLifetimeTests.Lifted\ObjectLifetimeTests.Lifted (Package)\ObjectLifetimeTests.Lifted (Package).wapproj", "{AA56B739-3D4C-47DD-B4F0-5139DE01F291}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|arm64 = Debug|arm64
@@ -375,30 +373,13 @@ Global
 		{3CF27C11-410F-44A3-B660-B52EC02FF35A}.Debug|x64.Build.0 = Debug|x64
 		{3CF27C11-410F-44A3-B660-B52EC02FF35A}.Debug|x86.ActiveCfg = Debug|x86
 		{3CF27C11-410F-44A3-B660-B52EC02FF35A}.Debug|x86.Build.0 = Debug|x86
+		{3CF27C11-410F-44A3-B660-B52EC02FF35A}.Debug|x86.Deploy.0 = Debug|x86
 		{3CF27C11-410F-44A3-B660-B52EC02FF35A}.Release|arm64.ActiveCfg = Release|arm64
 		{3CF27C11-410F-44A3-B660-B52EC02FF35A}.Release|arm64.Build.0 = Release|arm64
 		{3CF27C11-410F-44A3-B660-B52EC02FF35A}.Release|x64.ActiveCfg = Release|x64
 		{3CF27C11-410F-44A3-B660-B52EC02FF35A}.Release|x64.Build.0 = Release|x64
 		{3CF27C11-410F-44A3-B660-B52EC02FF35A}.Release|x86.ActiveCfg = Release|x86
 		{3CF27C11-410F-44A3-B660-B52EC02FF35A}.Release|x86.Build.0 = Release|x86
-		{AA56B739-3D4C-47DD-B4F0-5139DE01F291}.Debug|arm64.ActiveCfg = Debug|arm64
-		{AA56B739-3D4C-47DD-B4F0-5139DE01F291}.Debug|arm64.Build.0 = Debug|arm64
-		{AA56B739-3D4C-47DD-B4F0-5139DE01F291}.Debug|arm64.Deploy.0 = Debug|arm64
-		{AA56B739-3D4C-47DD-B4F0-5139DE01F291}.Debug|x64.ActiveCfg = Debug|x64
-		{AA56B739-3D4C-47DD-B4F0-5139DE01F291}.Debug|x64.Build.0 = Debug|x64
-		{AA56B739-3D4C-47DD-B4F0-5139DE01F291}.Debug|x64.Deploy.0 = Debug|x64
-		{AA56B739-3D4C-47DD-B4F0-5139DE01F291}.Debug|x86.ActiveCfg = Debug|x86
-		{AA56B739-3D4C-47DD-B4F0-5139DE01F291}.Debug|x86.Build.0 = Debug|x86
-		{AA56B739-3D4C-47DD-B4F0-5139DE01F291}.Debug|x86.Deploy.0 = Debug|x86
-		{AA56B739-3D4C-47DD-B4F0-5139DE01F291}.Release|arm64.ActiveCfg = Release|arm64
-		{AA56B739-3D4C-47DD-B4F0-5139DE01F291}.Release|arm64.Build.0 = Release|arm64
-		{AA56B739-3D4C-47DD-B4F0-5139DE01F291}.Release|arm64.Deploy.0 = Release|arm64
-		{AA56B739-3D4C-47DD-B4F0-5139DE01F291}.Release|x64.ActiveCfg = Release|x64
-		{AA56B739-3D4C-47DD-B4F0-5139DE01F291}.Release|x64.Build.0 = Release|x64
-		{AA56B739-3D4C-47DD-B4F0-5139DE01F291}.Release|x64.Deploy.0 = Release|x64
-		{AA56B739-3D4C-47DD-B4F0-5139DE01F291}.Release|x86.ActiveCfg = Release|x86
-		{AA56B739-3D4C-47DD-B4F0-5139DE01F291}.Release|x86.Build.0 = Release|x86
-		{AA56B739-3D4C-47DD-B4F0-5139DE01F291}.Release|x86.Deploy.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -425,7 +406,6 @@ Global
 		{75B1621F-EC51-4D77-BD7E-BEE576B3ADC9} = {CFB651EC-DAA4-4A11-ABCD-C77F90602EB5}
 		{493C7729-2F21-4198-AB09-BDF56BF501D3} = {CFB651EC-DAA4-4A11-ABCD-C77F90602EB5}
 		{3CF27C11-410F-44A3-B660-B52EC02FF35A} = {CFB651EC-DAA4-4A11-ABCD-C77F90602EB5}
-		{AA56B739-3D4C-47DD-B4F0-5139DE01F291} = {CFB651EC-DAA4-4A11-ABCD-C77F90602EB5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5AE8C9D7-2613-4E1A-A4F2-579BAC28D0A2}

@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "ObjectLifetimeTests.Lifted": {
+      "commandName": "AppContainer"
+    }
+  }
+}
