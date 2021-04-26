@@ -1,0 +1,81 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net5.0-windows10.0.19041.0</TargetFramework>
+        <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+        <RootNamespace>ObjectLifetimeTests.Lifted</RootNamespace>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <Platforms>x86;x64;arm64</Platforms>
+        <RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
+     
+    </PropertyGroup>
+    <PropertyGroup>
+        <DefineConstants>LIFTED</DefineConstants>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Remove="RealMainPage.xaml" />
+        <None Remove="Tests\RealMainPage.xaml" />
+    </ItemGroup>
+    <ItemGroup>
+        <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.18362.16" />
+        <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" TargetingPackVersion="10.0.18362.16" />
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Include="..\..\Tests\AsyncQueue.cs" Link="Tests\AsyncQueue.cs" />
+        <Compile Include="..\..\Tests\ClrObjects.cs" Link="Tests\ClrObjects.cs" />
+        <Compile Include="..\..\Tests\CollectionExtensions.cs" Link="Tests\CollectionExtensions.cs" />
+        <Compile Include="..\..\Tests\CustomClrObject.cs" Link="Tests\CustomClrObject.cs" />
+        <Compile Include="..\..\Tests\CustomControl.cs" Link="Tests\CustomControl.cs" />
+        <Compile Include="..\..\Tests\CustomDependencyObject.cs" Link="Tests\CustomDependencyObject.cs" />
+        <Compile Include="..\..\Tests\CustomGroupedItemPages.cs" Link="Tests\CustomGroupedItemPages.cs" />
+        <Compile Include="..\..\Tests\CycleTestCanvas.cs" Link="Tests\CycleTestCanvas.cs" />
+        <Compile Include="..\..\Tests\MyControl.xaml.cs" Link="Tests\MyControl.xaml.cs" />
+        <Compile Include="..\..\Tests\ObjectLifetimePage.xaml.cs" Link="Tests\ObjectLifetimePage.xaml.cs" />
+        <Compile Include="..\..\Tests\ObjectLifetimeTests.cs" Link="Tests\ObjectLifetimeTests.cs" />
+        <Compile Include="..\..\Tests\ObservableDictionary.cs" Link="Tests\ObservableDictionary.cs" />
+        <Compile Include="..\..\Tests\RealMainPage.xaml.cs" Link="Tests\RealMainPage.xaml.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.ProjectReunion" Version="0.5.5" />
+        <PackageReference Include="Microsoft.ProjectReunion.Foundation" Version="0.5.5" />
+        <PackageReference Include="Microsoft.ProjectReunion.WinUI" Version="0.5.5" />
+        <Manifest Include="$(ApplicationManifest)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Page Include="..\..\Tests\MyControl.xaml" Link="Tests\MyControl.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Include="..\..\Tests\ObjectLifetimePage.xaml" Link="Tests\ObjectLifetimePage.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
+        <Page Include="..\..\Tests\RealMainPage.xaml" Link="Tests\RealMainPage.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Page Update="Tests\RealMainPage.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Page Update="RealMainPage.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Resource Update="..\..\Tests\MyControl.xaml">
+            <Link>Tests\MyControl.xaml</Link>
+        </Resource>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Resource Update="..\..\Tests\ObjectLifetimePage.xaml">
+            <Link>Tests\ObjectLifetimePage.xaml</Link>
+        </Resource>
+    </ItemGroup>
+</Project>

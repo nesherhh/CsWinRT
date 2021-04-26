@@ -1,0 +1,22 @@
+﻿<UserControl
+    x:Class="ObjectLifetimeTestsUI.RealMainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <StackPanel>
+        
+        <StackPanel Orientation="Horizontal">
+            <Button Click="Run" x:Name="_runButton">Run</Button>
+            <ProgressRing x:Name="_progressRing" IsActive="False" />
+        </StackPanel>
+        <TextBlock Text="{x:Bind TestCountMessage, Mode=OneWay}"/>
+        <TextBlock Text="{x:Bind FailedCountMessage, Mode=OneWay}"/>
+
+        <ListView ItemsSource="{x:Bind Errors}"/>
+
+        <StackPanel x:Name="_host"/>
+    </StackPanel>
+</UserControl>
