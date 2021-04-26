@@ -14,6 +14,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
+using Microsoft.VisualStudio.TestTools.UnitTesting.AppContainer;
 using Windows.Foundation.Collections;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -42,8 +43,13 @@ namespace ObjectLifetimeTests.Lifted
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
+            Microsoft.VisualStudio.TestPlatform.TestExecutor.UnitTestClient.CreateDefaultUI();
             m_window = new MainWindow();
             m_window.Activate();
+
+            UITestMethodAttribute.DispatcherQueue = m_window.DispatcherQueue;
+
+            Microsoft.VisualStudio.TestPlatform.TestExecutor.UnitTestClient.Run(Environment.CommandLine);
         }
 
         private Window m_window;
