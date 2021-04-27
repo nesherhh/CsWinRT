@@ -1,13 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reflection;
-using System.Text;
 
 namespace WinRT
 {
-
-    public static class TypeExtensions
+#if EMBED
+    internal
+#else 
+    public
+#endif
+    static class TypeExtensions
     {
         public static Type FindHelperType(this Type type)
         {

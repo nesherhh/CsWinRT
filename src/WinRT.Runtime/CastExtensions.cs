@@ -1,14 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Text;
 using WinRT.Interop;
 
 namespace WinRT
 {
-    public static class CastExtensions
+#if EMBED
+    internal 
+#else
+    public
+#endif 
+    static class CastExtensions
     {
         /// <summary>
         /// Cast a WinRT object to an interface type it implements in its implementation
@@ -22,7 +23,12 @@ namespace WinRT
         /// Otherwise, creates a new wrapper of the underlying WinRT object that implements <typeparamref name="TInterface"/>.
         /// </returns>
         /// <exception cref="ArgumentException">Thrown if the runtime type of <paramref name="value"/> is not a projected type (if the object is a managed object).</exception>
-        public static TInterface As<TInterface>(this object value)
+#if EMBED
+        protected 
+#else
+        public
+#endif
+        static TInterface As<TInterface>(this object value)
         {
             if (typeof(TInterface) == typeof(object))
             {
@@ -57,7 +63,12 @@ namespace WinRT
         /// Otherwise, returns null.
         /// </returns>
         /// <exception cref="InvalidOperationException">Thrown if the runtime type of <paramref name="value"/> is not a projected type.</exception>
-        public static AgileReference<T> AsAgile<T>(this T value) where T : class
+#if EMBED
+        protected 
+#else
+        public
+#endif
+        static AgileReference<T> AsAgile<T>(this T value) where T : class
         {
             if(value == null)
             {

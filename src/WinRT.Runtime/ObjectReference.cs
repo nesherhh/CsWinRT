@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 using WinRT.Interop;
 
 #pragma warning disable 0169 // The field 'xxx' is never used
@@ -12,7 +9,13 @@ using WinRT.Interop;
 
 namespace WinRT
 {
-    public abstract class IObjectReference : IDisposable
+
+#if EMBED
+    internal
+#else
+    public
+#endif
+    abstract class IObjectReference : IDisposable
     {
         protected bool disposed;
         private readonly IntPtr _thisPtr;
@@ -310,7 +313,12 @@ namespace WinRT
         }
     }
 
-    public class ObjectReference<T> : IObjectReference
+#if EMBED
+    internal
+#else
+    public
+#endif
+    class ObjectReference<T> : IObjectReference
     {
         private readonly T _vftbl;
         public T Vftbl

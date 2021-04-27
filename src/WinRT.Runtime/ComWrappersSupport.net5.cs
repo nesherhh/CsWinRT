@@ -11,7 +11,12 @@ using static System.Runtime.InteropServices.ComWrappers;
 
 namespace WinRT
 {
-    public static partial class ComWrappersSupport
+#if EMBED
+    internal
+#else
+    public
+#endif
+    static partial class ComWrappersSupport
     {
         // Instance field and property for Singleton pattern: ComWrappers `set` method should be idempotent 
         private static DefaultComWrappers _instance;
@@ -195,8 +200,12 @@ namespace WinRT
                 parms).Compile();
         }
     }
-
-    public class ComWrappersHelper
+#if EMBED
+    internal 
+#else
+    public
+#endif     
+    class ComWrappersHelper
     {
         public unsafe static void Init(
             bool isAggregation,
@@ -344,8 +353,12 @@ namespace WinRT
             }
         }
     }
-
-    public class DefaultComWrappers : ComWrappers
+#if EMBED
+    internal 
+#else
+    public 
+#endif     
+    class DefaultComWrappers : ComWrappers
     {
         private static readonly ConditionalWeakTable<Type, VtableEntries> TypeVtableEntryTable = new ConditionalWeakTable<Type, VtableEntries>();
         public static unsafe IUnknownVftbl IUnknownVftbl => Unsafe.AsRef<IUnknownVftbl>(IUnknownVftblPtr.ToPointer());

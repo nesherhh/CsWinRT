@@ -6,7 +6,12 @@ using System.Text;
 
 namespace WinRT
 {
-    public static class GuidGenerator
+#if EMBED
+    internal
+#else 
+    public
+#endif
+    static class GuidGenerator
     {
         public static Guid GetGUID(Type type)
         {

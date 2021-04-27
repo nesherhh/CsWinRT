@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Text;
 using WinRT.Interop;
 
 namespace WinRT
 {
-    public class SingleInterfaceOptimizedObject : IWinRTObject, IDynamicInterfaceCastable
+#if EMBED
+    internal
+#else 
+    public
+#endif
+    class SingleInterfaceOptimizedObject : IWinRTObject, IDynamicInterfaceCastable
     {
         private Type _type;
         private IObjectReference _obj;

@@ -6,6 +6,9 @@ Copyright (C) Microsoft Corporation. All rights reserved.
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   
   <PropertyGroup>
+    <!-- Make sure WinRT.Runtime.dll and Microsoft.Windows.SDK.NET.dll get binplaced with authored component's dll -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!-- Generate a RuntimeConfig -->
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <!-- Name the RuntimeConfig properly -->
