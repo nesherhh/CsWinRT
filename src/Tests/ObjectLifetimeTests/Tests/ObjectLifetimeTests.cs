@@ -22,6 +22,10 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting.AppContainer;
+using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
+
 #else
 using Windows.System;
 using Windows.UI.Xaml;
@@ -45,19 +49,34 @@ namespace ObjectLifetimeTests
         { }
     }
 
+    [TestClass]
     public class ObjectLifetimeTestsRunner
     {
         private AsyncQueue _asyncQueue;
         private Panel mainCanvas;
         private WeakReference _childRef;
+        public DispatcherQueue q = DispatcherQueue.GetForCurrentThread();
 
-        public ObjectLifetimeTestsRunner(DispatcherQueue dispatcher, Panel canvas)
+        /* [ClassInitialize]
+         public void helper()
+         {
+             Logger.LogMessage("Class Init");
+             ObjectLifetimeTestsRunner testRunner = new ObjectLifetimeTestsRunner();
+             Logger.LogMessage("Class Created");
+         }*/
+
+
+        /*  public ObjectLifetimeTestsRunner(DispatcherQueue dispatcher, Panel canvas)
+          {
+
+          }*/
+
+        public ObjectLifetimeTestsRunner()
         {
-            mainCanvas = canvas;
-
-            _asyncQueue = new AsyncQueue(dispatcher);
+            //System.Diagnostics.Debugger.Launch();
+            mainCanvas = ((ObjectLifetimeTests.Lifted.App)Microsoft.UI.Xaml.Application.Current).m_window.LifeTimePage.Root;
+            _asyncQueue = new AsyncQueue(((ObjectLifetimeTests.Lifted.App)Microsoft.UI.Xaml.Application.Current).m_window.DispatcherQueue);           
         }
-
         [MethodImplAttribute(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
         public void GC_ForceCollect(int cnt = 1)
         {
@@ -125,9 +144,10 @@ namespace ObjectLifetimeTests
 
             o = null;
         }
-
+        [TestMethod]
         public void BasicTest1()
         {
+            //System.Diagnostics.Debugger.Launch();
             _asyncQueue
                 .CallFromUIThread(() =>
                 {
@@ -137,6 +157,9 @@ namespace ObjectLifetimeTests
 
                     // Move element to a new position.
                     mainCanvas.Children.Remove(moveCanvas);
+
+                    //GC_ForceCollect();
+
                     mainCanvas.Children.Append(moveCanvas);
                 })
                 .CallFromUIThread(() =>
@@ -152,9 +175,10 @@ namespace ObjectLifetimeTests
                 });
 
             _asyncQueue.Run();
+            Assert.IsTrue(true);
         }
 
-        [Test]
+        //[UITestMethod]
         public void BasicTest2()
         {
             _asyncQueue
@@ -179,7 +203,7 @@ namespace ObjectLifetimeTests
             _asyncQueue.Run();
         }
 
-        [Test]
+        //[UITestMethod]
         public void BasicTest3()
         {
             _asyncQueue

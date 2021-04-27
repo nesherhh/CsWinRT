@@ -25,7 +25,15 @@ namespace ObjectLifetimeTests.Lifted
     {
         public MainWindow()
         {
-            this.InitializeComponent();
+            this.InitializeComponent();           
+        }
+
+        public ObjectLifetimePage LifeTimePage
+        {
+            get
+            {
+                return this.LifetimePage;
+            }
         }
 
     }

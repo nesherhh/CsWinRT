@@ -59,7 +59,7 @@ namespace ObjectLifetimeTestsUI
             var testCount = 0;
             var failedCount = 0;
 
-            await Task.Run(() =>
+/*            await Task.Run(() =>
             {
                 var test = new ObjectLifetimeTestsRunner(_dispatcherQueue, samplePage.Root);
                 var methods = test.GetType().GetMethods();
@@ -89,7 +89,7 @@ namespace ObjectLifetimeTestsUI
                        });
                     }
                 }
-            });
+            });*/
 
             TestCountMessage = $"{testCount} tests";
             FailedCountMessage = $"{failedCount} failed";

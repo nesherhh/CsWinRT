@@ -39,5 +39,6 @@ namespace ObjectLifetimeTests
         }
 
         public Panel Root => this._root;
+        
     }
 }
