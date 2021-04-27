@@ -59,7 +59,6 @@ namespace ObjectLifetimeTests
 
         public ObjectLifetimeTestsRunner()
         {
-            //System.Diagnostics.Debugger.Launch();
             mainCanvas = ((ObjectLifetimeTests.Lifted.App)Microsoft.UI.Xaml.Application.Current).m_window.LifeTimePage.Root;
             _asyncQueue = new AsyncQueue(((ObjectLifetimeTests.Lifted.App)Microsoft.UI.Xaml.Application.Current).m_window.DispatcherQueue);
         }
