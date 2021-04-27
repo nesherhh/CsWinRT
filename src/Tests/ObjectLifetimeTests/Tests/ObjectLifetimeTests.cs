@@ -55,27 +55,13 @@ namespace ObjectLifetimeTests
         private AsyncQueue _asyncQueue;
         private Panel mainCanvas;
         private WeakReference _childRef;
-        public DispatcherQueue q = DispatcherQueue.GetForCurrentThread();
 
-        /* [ClassInitialize]
-         public void helper()
-         {
-             Logger.LogMessage("Class Init");
-             ObjectLifetimeTestsRunner testRunner = new ObjectLifetimeTestsRunner();
-             Logger.LogMessage("Class Created");
-         }*/
-
-
-        /*  public ObjectLifetimeTestsRunner(DispatcherQueue dispatcher, Panel canvas)
-          {
-
-          }*/
 
         public ObjectLifetimeTestsRunner()
         {
             //System.Diagnostics.Debugger.Launch();
             mainCanvas = ((ObjectLifetimeTests.Lifted.App)Microsoft.UI.Xaml.Application.Current).m_window.LifeTimePage.Root;
-            _asyncQueue = new AsyncQueue(((ObjectLifetimeTests.Lifted.App)Microsoft.UI.Xaml.Application.Current).m_window.DispatcherQueue);           
+            _asyncQueue = new AsyncQueue(((ObjectLifetimeTests.Lifted.App)Microsoft.UI.Xaml.Application.Current).m_window.DispatcherQueue);
         }
         [MethodImplAttribute(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
         public void GC_ForceCollect(int cnt = 1)
@@ -158,15 +144,15 @@ namespace ObjectLifetimeTests
                     // Move element to a new position.
                     mainCanvas.Children.Remove(moveCanvas);
 
-                    //GC_ForceCollect();
-
+                    //System.Diagnostics.Debugger.Launch();
                     mainCanvas.Children.Append(moveCanvas);
                 })
                 .CallFromUIThread(() =>
                 {
-                    // Force a GC
+                 //Force a GC
                     GC_ForceCollect();
 
+                    //System.Diagnostics.Debugger.Launch();
                     Verify(!_childRef.IsAlive, "MoveCanvas is alive");
 
                     Canvas moveCanvas = mainCanvas.FindName("MoveCanvas") as Canvas;
@@ -178,7 +164,7 @@ namespace ObjectLifetimeTests
             Assert.IsTrue(true);
         }
 
-        //[UITestMethod]
+        [TestMethod]
         public void BasicTest2()
         {
             _asyncQueue
@@ -203,7 +189,7 @@ namespace ObjectLifetimeTests
             _asyncQueue.Run();
         }
 
-        //[UITestMethod]
+        [TestMethod]
         public void BasicTest3()
         {
             _asyncQueue
@@ -229,7 +215,7 @@ namespace ObjectLifetimeTests
         //
         // Test a custom control removed.
         //
-        [Test]
+        [TestMethod]
         public void BasicTest4()
         {
             _asyncQueue
@@ -254,7 +240,7 @@ namespace ObjectLifetimeTests
         FrameworkElement _parent = null;
         WeakReference _parentRef = null;
 
-        [Test]
+        [TestMethod]
         public void BasicTest5()
         {
             _asyncQueue
@@ -291,7 +277,7 @@ namespace ObjectLifetimeTests
         }
 
 
-        [Test]
+        [TestMethod]
         public void BasicTest6()
         {
             _asyncQueue
@@ -327,7 +313,7 @@ namespace ObjectLifetimeTests
             _asyncQueue.Run();
         }
 
-        [Test]
+        [TestMethod]
         public void BasicTest6b()
         {
             _asyncQueue
@@ -397,7 +383,7 @@ namespace ObjectLifetimeTests
         AutoResetEvent loadedSignal = new AutoResetEvent(false);
         AutoResetEvent unloadedSignal = new AutoResetEvent(false);
 
-        [Test]
+        [TestMethod]
         // Bugbug: dies before unloaded event is raised
         public void CycleTest1()
         {
@@ -457,7 +443,7 @@ namespace ObjectLifetimeTests
         //
         // Cycle from StackPanel to custom element to delegate back to StackPanel.
         //
-        [Test]
+        [TestMethod]
         [MethodImplAttribute(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
         public void CycleTest1b()
         {
@@ -516,7 +502,7 @@ namespace ObjectLifetimeTests
         //
         // Cycle from StackPanel to built-in element to delegate on framework event back to StackPanel.
         //
-        [Test]
+        [TestMethod]
         [MethodImplAttribute(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
         public void CycleTest1c()
         {
@@ -555,7 +541,7 @@ namespace ObjectLifetimeTests
         //
         // Cycle from StackPanel to built-in element on DataContext back to StackPanel.
         //
-        [Test]
+        [TestMethod]
         [MethodImplAttribute(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
         public void CycleTest2()
         {
@@ -601,7 +587,7 @@ namespace ObjectLifetimeTests
         //
         // Cycle from StackPanel to custom object on DataContext back to StackPanel.
         //
-        [Test]
+        [TestMethod]
         [MethodImplAttribute(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
         public void CycleTest2b()
         {
@@ -648,7 +634,7 @@ namespace ObjectLifetimeTests
         //
         // Cycle from StackPanel to built-in element on Binding back to StackPanel.
         //
-        [Test]
+        [TestMethod]
         [MethodImplAttribute(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
         public void CycleTest2c()
         {
@@ -687,7 +673,7 @@ namespace ObjectLifetimeTests
         }
         WeakReference _objIWeakRef = null;
 
-        [Test]
+        [TestMethod]
         [MethodImplAttribute(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
         public void CycleTest3()
         {
@@ -729,7 +715,7 @@ namespace ObjectLifetimeTests
         //
         // Cycle from ContentControl to custom control back to ContentControl.
         //
-        [Test]
+        [TestMethod]
         [MethodImplAttribute(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
         public void CycleTest3b()
         {
@@ -757,7 +743,7 @@ namespace ObjectLifetimeTests
         //
         // Cycle from ItemsControl to custom control back to ItemsControl.
         //
-        [Test]
+        [TestMethod]
         [MethodImplAttribute(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
         public void CycleTest4()
         {
@@ -785,7 +771,7 @@ namespace ObjectLifetimeTests
         //
         // Cycle from built-in parent element to clr object to built-in child element back to parent.
         // 
-        [Test]
+        [TestMethod]
         [MethodImplAttribute(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
         public void CycleTest5()
         {
@@ -820,7 +806,7 @@ namespace ObjectLifetimeTests
         // Cycle:
         // StackPanel1.Tag = StackPanel1
         //
-        [Test]
+        [TestMethod]
         [MethodImplAttribute(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
         public void CycleTest6()
         {
@@ -855,7 +841,7 @@ namespace ObjectLifetimeTests
         // StackPanel1.Tag = StackPanel2
         // => StackPanel2.Tag = StackPanel1
         //
-        [Test]
+        [TestMethod]
         [MethodImplAttribute(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
         public void CycleTest6b()
         {
@@ -898,7 +884,7 @@ namespace ObjectLifetimeTests
         // => ClrObj.MyTag = StackPanel2
         // => StackPanel2.Tag = StackPanel1
         //
-        [Test]
+        [TestMethod]
         [MethodImplAttribute(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
         public void CycleTest6c()
         {
@@ -945,7 +931,7 @@ namespace ObjectLifetimeTests
         // StackPanel1.Tag = Binding(ClrObj.MyTag)
         // => ClrObject.MyTag = StackPanel1
         //
-        [Test]
+        [TestMethod]
         [MethodImplAttribute(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
         public void CycleTest7()
         {
@@ -989,7 +975,7 @@ namespace ObjectLifetimeTests
         // CustomControl.Content = Button
         // => Button Binding(CustomDependencyObject.AttachedObject = FrameworkElement.Tag)
         //
-        [Test]
+        [TestMethod]
         [MethodImplAttribute(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
         public void CycleTest8()
         {
@@ -1044,7 +1030,6 @@ namespace ObjectLifetimeTests
         // => Binding(CustomDependencyObject.AttachedObject = Button.Tag)
         // => Button.Tag = Grid
         //
-        [Test]
         [MethodImplAttribute(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
         public void CycleTest9()
         {
@@ -1117,7 +1102,7 @@ namespace ObjectLifetimeTests
         // This is a special cycle because it's within the core, not in DXaml.
         //
 
-        [Test]
+        [TestMethod]
         [MethodImplAttribute(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
         public void CycleTest10()
         {
@@ -1139,7 +1124,7 @@ namespace ObjectLifetimeTests
         }
 
 
-        [Test]
+        [TestMethod]
         [MethodImplAttribute(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
         public void LeakTest1()
         {
@@ -1180,7 +1165,7 @@ namespace ObjectLifetimeTests
         //
         // Verify item removed from FlipView is collected.
         //
-        [Test]
+        [TestMethod]
         [MethodImplAttribute(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
         public void LeakTest1b()
         {
@@ -1470,7 +1455,7 @@ namespace ObjectLifetimeTests
         // Verify RadioButton group updates (bug 643496)
         //
 
-        [Test]
+        [TestMethod]
         [MethodImplAttribute(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
         public void RadioButtonGroupTest()
         {
