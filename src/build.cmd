@@ -2,7 +2,7 @@
 if /i "%cswinrt_echo%" == "on" @echo on
 
 set CsWinRTNet5SdkVersion=5.0.104
-
+set msbuild_verbosity=diag
 set this_dir=%~dp0
 
 :dotnet
@@ -165,6 +165,7 @@ if ErrorLevel 1 (
   echo ERROR: Host test failed, skipping NuGet pack
   exit /b !ErrorLevel!
 )
+ 
 
 :authortest
 rem Run Authoring tests
@@ -197,3 +198,4 @@ echo.
 %*
 )
 goto :eof
+

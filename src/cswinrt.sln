@@ -380,6 +380,7 @@ Global
 		{3CF27C11-410F-44A3-B660-B52EC02FF35A}.Release|x64.Build.0 = Release|x64
 		{3CF27C11-410F-44A3-B660-B52EC02FF35A}.Release|x86.ActiveCfg = Release|x86
 		{3CF27C11-410F-44A3-B660-B52EC02FF35A}.Release|x86.Build.0 = Release|x86
+		{3CF27C11-410F-44A3-B660-B52EC02FF35A}.Release|x86.Deploy.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
