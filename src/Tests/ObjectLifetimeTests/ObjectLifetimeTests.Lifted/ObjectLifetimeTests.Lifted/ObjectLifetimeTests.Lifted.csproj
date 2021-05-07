@@ -11,6 +11,7 @@
         <PublishProfile>win10-$(Platform).pubxml</PublishProfile>
         <PrepareMsixPackageDependsOn></PrepareMsixPackageDependsOn>
         <PublishReadyToRun>false</PublishReadyToRun>
+        <MsixPackageSupport>false</MsixPackageSupport>
     </PropertyGroup>
     <PropertyGroup>
         <DefineConstants>LIFTED</DefineConstants>
