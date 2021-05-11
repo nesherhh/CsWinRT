@@ -139,11 +139,19 @@ namespace WinRT
             var rcw = ComWrappers.GetOrRegisterObjectForComInstance(thisPtr, CreateObjectFlags.TrackerObject, obj);
 
             // Resurrect IWinRTObject's disposed IObjectReferences, if necessary
-            var target = rcw is Delegate del ? del.Target : rcw;
+            Delegate del = rcw as Delegate;
+            var target = del != null ? del.Target : rcw;
             if (target is IWinRTObject winrtObj)
             {
                 winrtObj.Resurrect();
-                winrtObj.NativeObject.MarkCleanupRCW();
+                // Today we only mark the object reference associated with the delegate
+                // to clean up the RCW as delegates are the scenario we have observed where
+                // the RCW is alive longer than the object reference, but once the .NET 6 API
+                // is available, it should be used in other scenarios too.
+                if (del != null)
+                {
+                    winrtObj.NativeObject.MarkCleanupRCW();
+                }
             }
             return rcw;
         }
@@ -207,7 +215,6 @@ namespace WinRT
             out IObjectReference objRef)
         {
             objRef = ComWrappersSupport.GetObjectReferenceForInterface(isAggregation ? inner : newInstance);
-            objRef.MarkCleanupRCW();
 
             IntPtr referenceTracker;
             {
@@ -466,7 +473,6 @@ namespace WinRT
                 // on destruction as the CLR would do it.
                 winrtObj.NativeObject.ReleaseFromTrackerSource();
                 winrtObj.NativeObject.PreventReleaseFromTrackerSourceOnDispose = true;
-                winrtObj.NativeObject.MarkCleanupRCW();
             }
 
             return obj;
