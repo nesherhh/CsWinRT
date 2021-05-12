@@ -62,7 +62,7 @@ if /I "%cswinrt_configuration%" equ "all" (
 )
 
 if "%cswinrt_configuration%"=="" (
-  set cswinrt_configuration=Release
+  set cswinrt_configuration=Debug
 )
 
 if "%cswinrt_version_number%"=="" set cswinrt_version_number=0.0.0.0
