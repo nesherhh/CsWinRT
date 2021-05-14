@@ -62,7 +62,7 @@ if /I "%cswinrt_configuration%" equ "all" (
 )
 
 if "%cswinrt_configuration%"=="" (
-  set cswinrt_configuration=Debug
+  set cswinrt_configuration=Release
 )
 
 if "%cswinrt_version_number%"=="" set cswinrt_version_number=0.0.0.0
@@ -121,6 +121,8 @@ if not exist %nuget_dir%\nuget.exe powershell -Command "Invoke-WebRequest https:
 rem Note: packages.config-based (vcxproj) projects do not support msbuild /t:restore
 call %this_dir%get_testwinrt.cmd
 call :exec %nuget_dir%\nuget.exe restore %nuget_params% %this_dir%cswinrt.sln
+rem: Calling nuget restore again on ObjectLifetimeTests.Lifted.csproj to prevent .props from \microsoft.testplatform.testhost\build\netcoreapp2.1 from being included. Nuget.exe erroneously imports props files.
+call :exec %msbuild_path%msbuild.exe %this_dir%\Tests\ObjectLifetimeTests\ObjectLifetimeTests.Lifted\ObjectLifetimeTests.Lifted\ObjectLifetimeTests.Lifted.csproj /t:restore /p:platform=%cswinrt_platform%;configuration=%cswinrt_configuration%
 
 :build
 echo Building cswinrt for %cswinrt_platform% %cswinrt_configuration%
@@ -144,6 +146,15 @@ if not exist %dotnet_exe% (
     set dotnet_exe="%ProgramFiles%\dotnet\dotnet.exe"
   )
 )
+
+:objectlifetimetests
+rem Running Object Lifetime Unit Tests
+pushd .
+cd %this_dir%\Tests\ObjectLifetimeTests\ObjectLifetimeTests.Lifted\ObjectLifetimeTests.Lifted\bin\%cswinrt_platform%\%cswinrt_configuration%\net5.0-windows10.0.19041.0\win10-%cswinrt_platform%
+vstest.console.exe ObjectLifetimeTests.Lifted.build.appxrecipe /TestAdapterPath:"%USERPROFILE%\.nuget\packages\mstest.testadapter\2.2.4-preview-20210412-01\build\_common" /framework:FrameworkUap10 /logger:trx;LogFileName=%this_dir%\VsTestResults.trx 
+popd
+
+
 
 rem WinUI NuGet package's Microsoft.WinUI.AppX.targets attempts to import a file that does not exist, even when
 rem executing "dotnet test --no-build ...", which evidently still needs to parse and load the entire project.
