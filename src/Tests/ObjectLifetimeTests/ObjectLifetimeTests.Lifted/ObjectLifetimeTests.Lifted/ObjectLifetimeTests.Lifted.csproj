@@ -51,7 +51,6 @@
         <Compile Include="..\..\Tests\ObjectLifetimePage.xaml.cs" Link="Tests\ObjectLifetimePage.xaml.cs" />
         <Compile Include="..\..\Tests\ObjectLifetimeTests.cs" Link="Tests\ObjectLifetimeTests.cs" />
         <Compile Include="..\..\Tests\ObservableDictionary.cs" Link="Tests\ObservableDictionary.cs" />
-        <Compile Include="..\..\Tests\RealMainPage.xaml.cs" Link="Tests\RealMainPage.xaml.cs" />
     </ItemGroup>
     <ItemGroup>
       <Content Include="Images\LockScreenLogo.scale-200.png" />
@@ -95,9 +94,6 @@
             <Generator>MSBuild:Compile</Generator>
         </Page>
         <Page Include="..\..\Tests\ObjectLifetimePage.xaml" Link="Tests\ObjectLifetimePage.xaml">
-            <Generator>MSBuild:Compile</Generator>
-        </Page>
-        <Page Include="..\..\Tests\RealMainPage.xaml" Link="Tests\RealMainPage.xaml">
             <Generator>MSBuild:Compile</Generator>
         </Page>
     </ItemGroup>

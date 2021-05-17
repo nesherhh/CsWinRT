@@ -37,12 +37,6 @@ using Windows.UI.Xaml.Shapes;
 
 namespace ObjectLifetimeTests
 {
-    public class TestAttribute : Attribute
-    {
-
-    }
-
-
     public class TestException : Exception
     {
         public TestException(string message) : base(message)
