@@ -132,49 +132,49 @@ if ErrorLevel 1 (
 )
 if "%cswinrt_build_only%"=="true" goto :eof
 
-:test
-:unittest
-rem Build/Run xUnit tests, generating xml output report for Azure Devops reporting, via XunitXml.TestLogger NuGet
-echo Running cswinrt unit tests for %cswinrt_platform% %cswinrt_configuration%
-set dotnet_exe="%DOTNET_ROOT%\dotnet.exe"
-if not exist %dotnet_exe% (
-  if %cswinrt_platform%==x86 (
-    set dotnet_exe="%ProgramFiles(x86)%\dotnet\dotnet.exe"
-  ) else (
-    set dotnet_exe="%ProgramFiles%\dotnet\dotnet.exe"
-  )
-)
+@REM :test
+@REM :unittest
+@REM rem Build/Run xUnit tests, generating xml output report for Azure Devops reporting, via XunitXml.TestLogger NuGet
+@REM echo Running cswinrt unit tests for %cswinrt_platform% %cswinrt_configuration%
+@REM set dotnet_exe="%DOTNET_ROOT%\dotnet.exe"
+@REM if not exist %dotnet_exe% (
+@REM   if %cswinrt_platform%==x86 (
+@REM     set dotnet_exe="%ProgramFiles(x86)%\dotnet\dotnet.exe"
+@REM   ) else (
+@REM     set dotnet_exe="%ProgramFiles%\dotnet\dotnet.exe"
+@REM   )
+@REM )
 
-rem WinUI NuGet package's Microsoft.WinUI.AppX.targets attempts to import a file that does not exist, even when
-rem executing "dotnet test --no-build ...", which evidently still needs to parse and load the entire project.
-rem Work around by using a dummy targets file and assigning it to the MsAppxPackageTargets property.
-echo ^<Project/^> > %temp%\EmptyMsAppxPackage.Targets
-call :exec %dotnet_exe% test --verbosity normal --no-build --logger xunit;LogFilePath=%~dp0unittest_%cswinrt_version_string%.xml %this_dir%Tests/unittest/UnitTest.csproj /nologo /m /p:platform=%cswinrt_platform%;configuration=%cswinrt_configuration%;MsAppxPackageTargets=%temp%\EmptyMsAppxPackage.Targets 
-if ErrorLevel 1 (
-  echo.
-  echo ERROR: Unit test failed, skipping NuGet pack
-  exit /b !ErrorLevel!
-)
+@REM rem WinUI NuGet package's Microsoft.WinUI.AppX.targets attempts to import a file that does not exist, even when
+@REM rem executing "dotnet test --no-build ...", which evidently still needs to parse and load the entire project.
+@REM rem Work around by using a dummy targets file and assigning it to the MsAppxPackageTargets property.
+@REM echo ^<Project/^> > %temp%\EmptyMsAppxPackage.Targets
+@REM call :exec %dotnet_exe% test --verbosity normal --no-build --logger xunit;LogFilePath=%~dp0unittest_%cswinrt_version_string%.xml %this_dir%Tests/unittest/UnitTest.csproj /nologo /m /p:platform=%cswinrt_platform%;configuration=%cswinrt_configuration%;MsAppxPackageTargets=%temp%\EmptyMsAppxPackage.Targets 
+@REM if ErrorLevel 1 (
+@REM   echo.
+@REM   echo ERROR: Unit test failed, skipping NuGet pack
+@REM   exit /b !ErrorLevel!
+@REM )
 
-:hosttest
-rem Run WinRT.Host tests
-echo Running cswinrt host tests for %cswinrt_platform% %cswinrt_configuration%
-call :exec %this_dir%_build\%cswinrt_platform%\%cswinrt_configuration%\HostTest\bin\HostTest.exe --gtest_output=xml:%this_dir%hosttest_%cswinrt_version_string%.xml 
-if ErrorLevel 1 (
-  echo.
-  echo ERROR: Host test failed, skipping NuGet pack
-  exit /b !ErrorLevel!
-)
+@REM :hosttest
+@REM rem Run WinRT.Host tests
+@REM echo Running cswinrt host tests for %cswinrt_platform% %cswinrt_configuration%
+@REM call :exec %this_dir%_build\%cswinrt_platform%\%cswinrt_configuration%\HostTest\bin\HostTest.exe --gtest_output=xml:%this_dir%hosttest_%cswinrt_version_string%.xml 
+@REM if ErrorLevel 1 (
+@REM   echo.
+@REM   echo ERROR: Host test failed, skipping NuGet pack
+@REM   exit /b !ErrorLevel!
+@REM )
 
-:authortest
-rem Run Authoring tests
-echo Running cswinrt authoring tests for %cswinrt_platform% %cswinrt_configuration%
-call :exec %this_dir%_build\%cswinrt_platform%\%cswinrt_configuration%\AuthoringConsumptionTest\bin\AuthoringConsumptionTest.exe --gtest_output=xml:%this_dir%hosttest_%cswinrt_version_string%.xml 
-if ErrorLevel 1 (
-  echo.
-  echo ERROR: Authoring test failed, skipping NuGet pack
-  exit /b !ErrorLevel!
-)
+@REM :authortest
+@REM rem Run Authoring tests
+@REM echo Running cswinrt authoring tests for %cswinrt_platform% %cswinrt_configuration%
+@REM call :exec %this_dir%_build\%cswinrt_platform%\%cswinrt_configuration%\AuthoringConsumptionTest\bin\AuthoringConsumptionTest.exe --gtest_output=xml:%this_dir%hosttest_%cswinrt_version_string%.xml 
+@REM if ErrorLevel 1 (
+@REM   echo.
+@REM   echo ERROR: Authoring test failed, skipping NuGet pack
+@REM   exit /b !ErrorLevel!
+@REM )
 
 :package
 set cswinrt_bin_dir=%this_dir%_build\%cswinrt_platform%\%cswinrt_configuration%\cswinrt\bin\
