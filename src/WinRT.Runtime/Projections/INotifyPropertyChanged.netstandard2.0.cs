@@ -42,7 +42,8 @@ namespace ABI.System.ComponentModel
                 AbiToProjectionVftablePtr = (IntPtr)nativeVftbl;
             }
 
-            private static global::System.Runtime.CompilerServices.ConditionalWeakTable<global::System.ComponentModel.INotifyPropertyChanged, global::WinRT.EventRegistrationTokenTable<global::System.ComponentModel.PropertyChangedEventHandler>> _PropertyChanged_TokenTables = new global::System.Runtime.CompilerServices.ConditionalWeakTable<global::System.ComponentModel.INotifyPropertyChanged, global::WinRT.EventRegistrationTokenTable<global::System.ComponentModel.PropertyChangedEventHandler>>();
+            private readonly static Lazy<global::System.Runtime.CompilerServices.ConditionalWeakTable<global::System.ComponentModel.INotifyPropertyChanged, global::WinRT.EventRegistrationTokenTable<global::System.ComponentModel.PropertyChangedEventHandler>>> _PropertyChanged_TokenTablesLazy = new();
+            private static global::System.Runtime.CompilerServices.ConditionalWeakTable<global::System.ComponentModel.INotifyPropertyChanged, global::WinRT.EventRegistrationTokenTable<global::System.ComponentModel.PropertyChangedEventHandler>> _PropertyChanged_TokenTables => _PropertyChanged_TokenTablesLazy.Value;
 
             private static unsafe int Do_Abi_add_PropertyChanged_0(IntPtr thisPtr, IntPtr handler, out global::WinRT.EventRegistrationToken token)
             {
@@ -99,7 +100,7 @@ namespace ABI.System.ComponentModel
             _obj = obj;
 
             _PropertyChanged =
-                new EventSource<global::System.ComponentModel.PropertyChangedEventHandler>(_obj,
+                new PropertyChangedEventSource(_obj,
                 _obj.Vftbl.add_PropertyChanged_0,
                 _obj.Vftbl.remove_PropertyChanged_1);
         }
@@ -111,6 +112,6 @@ namespace ABI.System.ComponentModel
             remove => _PropertyChanged.Unsubscribe(value);
         }
 
-        private EventSource<global::System.ComponentModel.PropertyChangedEventHandler> _PropertyChanged;
+        private PropertyChangedEventSource _PropertyChanged;
     }
 }

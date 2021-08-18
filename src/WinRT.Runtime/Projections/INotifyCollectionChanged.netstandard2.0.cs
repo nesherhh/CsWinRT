@@ -42,7 +42,8 @@ namespace ABI.System.Collections.Specialized
                 AbiToProjectionVftablePtr = (IntPtr)nativeVftbl;
             }
 
-            private static global::System.Runtime.CompilerServices.ConditionalWeakTable<global::System.Collections.Specialized.INotifyCollectionChanged, global::WinRT.EventRegistrationTokenTable<global::System.Collections.Specialized.NotifyCollectionChangedEventHandler>> _CollectionChanged_TokenTables = new global::System.Runtime.CompilerServices.ConditionalWeakTable<global::System.Collections.Specialized.INotifyCollectionChanged, global::WinRT.EventRegistrationTokenTable<global::System.Collections.Specialized.NotifyCollectionChangedEventHandler>>();
+            private readonly static Lazy<global::System.Runtime.CompilerServices.ConditionalWeakTable<global::System.Collections.Specialized.INotifyCollectionChanged, global::WinRT.EventRegistrationTokenTable<global::System.Collections.Specialized.NotifyCollectionChangedEventHandler>>> _CollectionChanged_TokenTablesLazy = new();
+            private static global::System.Runtime.CompilerServices.ConditionalWeakTable<global::System.Collections.Specialized.INotifyCollectionChanged, global::WinRT.EventRegistrationTokenTable<global::System.Collections.Specialized.NotifyCollectionChangedEventHandler>> _CollectionChanged_TokenTables => _CollectionChanged_TokenTablesLazy.Value;
 
             private static unsafe int Do_Abi_add_CollectionChanged_0(IntPtr thisPtr, IntPtr handler, out global::WinRT.EventRegistrationToken token)
             {
@@ -100,7 +101,7 @@ namespace ABI.System.Collections.Specialized
             _obj = obj;
 
             _CollectionChanged =
-                new EventSource<global::System.Collections.Specialized.NotifyCollectionChangedEventHandler>(_obj,
+                new NotifyCollectionChangedEventSource(_obj,
                 _obj.Vftbl.add_CollectionChanged_0,
                 _obj.Vftbl.remove_CollectionChanged_1);
         }
@@ -111,6 +112,6 @@ namespace ABI.System.Collections.Specialized
             remove => _CollectionChanged.Unsubscribe(value);
         }
 
-        private EventSource<global::System.Collections.Specialized.NotifyCollectionChangedEventHandler> _CollectionChanged;
+        private NotifyCollectionChangedEventSource _CollectionChanged;
     }
 }
