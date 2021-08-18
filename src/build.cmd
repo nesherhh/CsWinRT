@@ -1,3 +1,4 @@
+rem build.cmd x64 release 1.3.3.49999 1.3.3-private.1 1.3.3.1
 @echo off
 if /i "%cswinrt_echo%" == "on" @echo on
 
@@ -150,64 +151,64 @@ if ErrorLevel 1 (
 if "%cswinrt_build_only%"=="true" goto :eof
 
 rem Tests are not yet enabled for ARM builds (not supported by Project Reunion)
-if %cswinrt_platform%==arm goto :eof
-if %cswinrt_platform%==arm64 goto :eof
+rem if %cswinrt_platform%==arm goto :eof
+rem if %cswinrt_platform%==arm64 goto :eof
 
-:test
-:unittest
+rem :test
+rem :unittest
 rem Build/Run xUnit tests, generating xml output report for Azure Devops reporting, via XunitXml.TestLogger NuGet
-echo Running cswinrt unit tests for %cswinrt_platform% %cswinrt_configuration%
-if %cswinrt_platform%==x86 (
-  set dotnet_exe="%DOTNET_ROOT(86)%\dotnet.exe"
-) else (
-  set dotnet_exe="%DOTNET_ROOT%\dotnet.exe"
-)
-if not exist %dotnet_exe% (
-  if %cswinrt_platform%==x86 (
-    set dotnet_exe="%ProgramFiles(x86)%\dotnet\dotnet.exe"
-  ) else (
-    set dotnet_exe="%ProgramFiles%\dotnet\dotnet.exe"
-  )
-)
-
-:objectlifetimetests
-rem Running Object Lifetime Unit Tests
-pushd .
-cd %this_dir%\Tests\ObjectLifetimeTests\bin\%cswinrt_platform%\%cswinrt_configuration%\net5.0-windows10.0.19041.0\win10-%cswinrt_platform%
-sn -Vr Microsoft.Windows.SDK.NET.dll
-vstest.console.exe ObjectLifetimeTests.Lifted.build.appxrecipe /TestAdapterPath:"%USERPROFILE%\.nuget\packages\mstest.testadapter\2.2.4-preview-20210513-02\build\_common" /framework:FrameworkUap10 /logger:trx;LogFileName=%this_dir%\VsTestResults.trx 
-popd
-
-rem WinUI NuGet package's Microsoft.WinUI.AppX.targets attempts to import a file that does not exist, even when
-rem executing "dotnet test --no-build ...", which evidently still needs to parse and load the entire project.
-rem Work around by using a dummy targets file and assigning it to the MsAppxPackageTargets property.
-echo ^<Project/^> > %temp%\EmptyMsAppxPackage.Targets
-call :exec %dotnet_exe% test --verbosity normal --no-build --logger xunit;LogFilePath=%~dp0unittest_%cswinrt_version_string%.xml %this_dir%Tests/unittest/UnitTest.csproj /nologo /m /p:platform=%cswinrt_platform%;configuration=%cswinrt_configuration%;MsAppxPackageTargets=%temp%\EmptyMsAppxPackage.Targets 
-if ErrorLevel 1 (
-  echo.
-  echo ERROR: Unit test failed, skipping NuGet pack
-  exit /b !ErrorLevel!
-)
-
-:hosttest
-rem Run WinRT.Host tests
-echo Running cswinrt host tests for %cswinrt_platform% %cswinrt_configuration%
-call :exec %this_dir%_build\%cswinrt_platform%\%cswinrt_configuration%\HostTest\bin\HostTest.exe --gtest_output=xml:%this_dir%hosttest_%cswinrt_version_string%.xml 
-if ErrorLevel 1 (
-  echo.
-  echo ERROR: Host test failed, skipping NuGet pack
-  exit /b !ErrorLevel!
-)
- 
-:authortest
-rem Run Authoring tests
-echo Running cswinrt authoring tests for %cswinrt_platform% %cswinrt_configuration%
-call :exec %this_dir%_build\%cswinrt_platform%\%cswinrt_configuration%\AuthoringConsumptionTest\bin\AuthoringConsumptionTest.exe --gtest_output=xml:%this_dir%hosttest_%cswinrt_version_string%.xml 
-if ErrorLevel 1 (
-  echo.
-  echo ERROR: Authoring test failed, skipping NuGet pack
-  exit /b !ErrorLevel!
-)
+rem echo Running cswinrt unit tests for %cswinrt_platform% %cswinrt_configuration%
+rem if %cswinrt_platform%==x86 (
+rem   set dotnet_exe="%DOTNET_ROOT(86)%\dotnet.exe"
+rem ) else (
+rem   set dotnet_exe="%DOTNET_ROOT%\dotnet.exe"
+rem )
+rem if not exist %dotnet_exe% (
+rem   if %cswinrt_platform%==x86 (
+rem     set dotnet_exe="%ProgramFiles(x86)%\dotnet\dotnet.exe"
+rem   ) else (
+rem     set dotnet_exe="%ProgramFiles%\dotnet\dotnet.exe"
+rem   )
+rem )
+rem 
+rem :objectlifetimetests
+rem rem Running Object Lifetime Unit Tests
+rem pushd .
+rem cd %this_dir%\Tests\ObjectLifetimeTests\bin\%cswinrt_platform%\%cswinrt_configuration%\net5.0-windows10.0.19041.0\win10-%cswinrt_platform%
+rem sn -Vr Microsoft.Windows.SDK.NET.dll
+rem vstest.console.exe ObjectLifetimeTests.Lifted.build.appxrecipe /TestAdapterPath:"%USERPROFILE%\.nuget\packages\mstest.testadapter\2.2.4-preview-20210513-02\build\_common" /framework:FrameworkUap10 /logger:trx;LogFileName=%this_dir%\VsTestResults.trx 
+rem popd
+rem 
+rem rem WinUI NuGet package's Microsoft.WinUI.AppX.targets attempts to import a file that does not exist, even when
+rem rem executing "dotnet test --no-build ...", which evidently still needs to parse and load the entire project.
+rem rem Work around by using a dummy targets file and assigning it to the MsAppxPackageTargets property.
+rem echo ^<Project/^> > %temp%\EmptyMsAppxPackage.Targets
+rem call :exec %dotnet_exe% test --verbosity normal --no-build --logger xunit;LogFilePath=%~dp0unittest_%cswinrt_version_string%.xml %this_dir%Tests/unittest/UnitTest.csproj /nologo /m /p:platform=%cswinrt_platform%;configuration=%cswinrt_configuration%;MsAppxPackageTargets=%temp%\EmptyMsAppxPackage.Targets 
+rem if ErrorLevel 1 (
+rem   echo.
+rem   echo ERROR: Unit test failed, skipping NuGet pack
+rem   exit /b !ErrorLevel!
+rem )
+rem 
+rem :hosttest
+rem rem Run WinRT.Host tests
+rem echo Running cswinrt host tests for %cswinrt_platform% %cswinrt_configuration%
+rem call :exec %this_dir%_build\%cswinrt_platform%\%cswinrt_configuration%\HostTest\bin\HostTest.exe --gtest_output=xml:%this_dir%hosttest_%cswinrt_version_string%.xml 
+rem if ErrorLevel 1 (
+rem   echo.
+rem   echo ERROR: Host test failed, skipping NuGet pack
+rem   exit /b !ErrorLevel!
+rem )
+rem  
+rem :authortest
+rem rem Run Authoring tests
+rem echo Running cswinrt authoring tests for %cswinrt_platform% %cswinrt_configuration%
+rem call :exec %this_dir%_build\%cswinrt_platform%\%cswinrt_configuration%\AuthoringConsumptionTest\bin\AuthoringConsumptionTest.exe --gtest_output=xml:%this_dir%hosttest_%cswinrt_version_string%.xml 
+rem if ErrorLevel 1 (
+rem   echo.
+rem   echo ERROR: Authoring test failed, skipping NuGet pack
+rem   exit /b !ErrorLevel!
+rem )
 
 :package
 set cswinrt_bin_dir=%this_dir%_build\%cswinrt_platform%\%cswinrt_configuration%\cswinrt\bin\
