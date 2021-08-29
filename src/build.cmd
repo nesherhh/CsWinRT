@@ -1,9 +1,9 @@
-rem build.cmd x64 release 1.3.3.49999 1.3.3-private.1 1.3.3.1
+rem build.cmd x64 release 1.3.3.1006 1.3.3-private.6 1.3.3.6
 @echo off
 if /i "%cswinrt_echo%" == "on" @echo on
 
-set CsWinRTBuildNetSDKVersion=6.0.100-preview.6.21355.2
-set CsWinRTNet5SdkVersion=5.0.302
+set CsWinRTBuildNetSDKVersion=6.0.100-preview.7.21379.14
+set CsWinRTNet5SdkVersion=5.0.400
 set this_dir=%~dp0
 
 :dotnet
