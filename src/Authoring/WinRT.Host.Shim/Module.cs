@@ -68,10 +68,11 @@ namespace WinRT.Host
             private AssemblyDependencyResolver _resolver;
 
             public static Assembly LoadAssembly(string targetAssembly)
-            {
-                return ALCMapping.GetOrAdd(targetAssembly, (_) => new ActivationLoader(targetAssembly))
-                    .LoadFromAssemblyPath(targetAssembly);
-            }
+			{
+				return AssemblyLoadContext.Default.LoadFromAssemblyPath(targetAssembly);
+				//return ALCMapping.GetOrAdd(targetAssembly, (_) => new ActivationLoader(targetAssembly))
+                //    .LoadFromAssemblyPath(targetAssembly);
+			}
 
             private ActivationLoader(string path)
             {
