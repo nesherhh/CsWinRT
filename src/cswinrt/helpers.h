@@ -509,15 +509,6 @@ namespace cswinrt
                     { "IGeneratorPositionHelperStatics" },
                 }
             },
-            { "Microsoft.UI.Xaml.Data",
-                {
-                    { "DataErrorsChangedEventArgs", "System.ComponentModel", "DataErrorsChangedEventArgs" },
-                    { "INotifyDataErrorInfo", "System.ComponentModel", "INotifyDataErrorInfo", true, true },
-                    { "INotifyPropertyChanged", "System.ComponentModel", "INotifyPropertyChanged" },
-                    { "PropertyChangedEventArgs", "System.ComponentModel", "PropertyChangedEventArgs" },
-                    { "PropertyChangedEventHandler", "System.ComponentModel", "PropertyChangedEventHandler" },
-                }
-            },
             { "Microsoft.UI.Xaml.Input",
                 {
                     { "ICommand", "System.Windows.Input", "ICommand", true }
@@ -621,6 +612,15 @@ namespace cswinrt
                     { "IColorHelperStatics" },
                     { "IColorHelperStatics2" },
                 }
+            },
+            { "Windows.UI.Xaml.Data",
+			    {
+			        { "DataErrorsChangedEventArgs", "System.ComponentModel", "DataErrorsChangedEventArgs" },
+			        { "INotifyDataErrorInfo", "System.ComponentModel", "INotifyDataErrorInfo", true, true },
+			        { "INotifyPropertyChanged", "System.ComponentModel", "INotifyPropertyChanged" },
+			        { "PropertyChangedEventArgs", "System.ComponentModel", "PropertyChangedEventArgs" },
+			        { "PropertyChangedEventHandler", "System.ComponentModel", "PropertyChangedEventHandler" },
+			    }
             },
             // Temporary, until WinUI provides TypeName
             { "Windows.UI.Xaml.Interop",
