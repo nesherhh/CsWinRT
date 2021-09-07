@@ -1,4 +1,4 @@
-rem build.cmd x64 release 1.3.3.1018 1.3.3-private.18 1.3.3.18
+rem build.cmd x64 release 1.3.3.1019 1.3.3-private.19 1.3.3.19
 @echo off
 if /i "%cswinrt_echo%" == "on" @echo on
 
@@ -142,7 +142,7 @@ call :exec %msbuild_path%msbuild.exe %this_dir%\Tests\ObjectLifetimeTests\Object
 
 :build
 echo Building cswinrt for %cswinrt_platform% %cswinrt_configuration%
-call :exec %msbuild_path%msbuild.exe %cswinrt_build_params% /p:platform=%cswinrt_platform%;configuration=%cswinrt_configuration%;VersionNumber=%cswinrt_version_number%;VersionString=%cswinrt_version_string%;AssemblyVersionNumber=%cswinrt_assembly_version%;GenerateTestProjection=true;BaselineAllAPICompatError=%cswinrt_baseline_breaking_compat_errors%;BaselineAllMatchingRefApiCompatError=%cswinrt_baseline_assembly_version_compat_errors% %this_dir%cswinrt.sln 
+call :exec %msbuild_path%msbuild.exe -m %cswinrt_build_params% /p:platform=%cswinrt_platform%;configuration=%cswinrt_configuration%;VersionNumber=%cswinrt_version_number%;VersionString=%cswinrt_version_string%;AssemblyVersionNumber=%cswinrt_assembly_version%;GenerateTestProjection=true;BaselineAllAPICompatError=%cswinrt_baseline_breaking_compat_errors%;BaselineAllMatchingRefApiCompatError=%cswinrt_baseline_assembly_version_compat_errors% %this_dir%cswinrt.sln 
 if ErrorLevel 1 (
   echo.
   echo ERROR: Build failed
