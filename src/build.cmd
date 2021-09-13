@@ -1,4 +1,4 @@
-rem build.cmd x64 release 1.3.3.1019 1.3.3-private.19 1.3.3.19
+rem build.cmd x64 release 1.3.3.1020 1.3.3-private.20 1.3.3.20
 @echo off
 if /i "%cswinrt_echo%" == "on" @echo on
 
