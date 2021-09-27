@@ -514,16 +514,6 @@ namespace cswinrt
                     { "ICommand", "System.Windows.Input", "ICommand", true }
                 }
             },
-            { "Microsoft.UI.Xaml.Interop",
-                {
-                    { "IBindableIterable", "System.Collections", "IEnumerable", true, true },
-                    { "IBindableVector", "System.Collections", "IList", true, true },
-                    { "INotifyCollectionChanged", "System.Collections.Specialized", "INotifyCollectionChanged", true },
-                    { "NotifyCollectionChangedAction", "System.Collections.Specialized", "NotifyCollectionChangedAction" },
-                    { "NotifyCollectionChangedEventArgs", "System.Collections.Specialized", "NotifyCollectionChangedEventArgs", true },
-                    { "NotifyCollectionChangedEventHandler", "System.Collections.Specialized", "NotifyCollectionChangedEventHandler", true },
-                }
-            },
             { "Microsoft.UI.Xaml.Media",
                 {
                     { "IMatrixHelper" },
@@ -625,8 +615,14 @@ namespace cswinrt
             // Temporary, until WinUI provides TypeName
             { "Windows.UI.Xaml.Interop",
                 {
+                    { "IBindableIterable", "System.Collections", "IEnumerable", true, true },
+                    { "IBindableVector", "System.Collections", "IList", true, true },
+                    { "INotifyCollectionChanged", "System.Collections.Specialized", "INotifyCollectionChanged", true },
+                    { "NotifyCollectionChangedAction", "System.Collections.Specialized", "NotifyCollectionChangedAction" },
+                    { "NotifyCollectionChangedEventArgs", "System.Collections.Specialized", "NotifyCollectionChangedEventArgs", true },
+                    { "NotifyCollectionChangedEventHandler", "System.Collections.Specialized", "NotifyCollectionChangedEventHandler", true },
                     { "TypeKind", "Windows.UI.Xaml.Interop", "TypeKind", true },
-                    { "TypeName", "System", "Type", true }
+                    { "TypeName", "System", "Type", true },
                 }
             },
         };

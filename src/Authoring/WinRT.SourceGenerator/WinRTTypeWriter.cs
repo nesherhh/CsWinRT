@@ -298,12 +298,12 @@ namespace Generator
             { "System.ComponentModel.PropertyChangedEventArgs", new MappedType("Windows.UI.Xaml.Data", "PropertyChangedEventArgs", "Windows.Foundation.UniversalApiContract") },
             { "System.ComponentModel.PropertyChangedEventHandler", new MappedType("Windows.UI.Xaml.Data", "PropertyChangedEventHandler", "Windows.Foundation.UniversalApiContract") },
             { "System.Windows.Input.ICommand", new MappedType("Microsoft.UI.Xaml.Input", "ICommand", "Microsoft.UI") },
-            { "System.Collections.IEnumerable", new MappedType("Microsoft.UI.Xaml.Interop", "IBindableIterable", "Microsoft.UI") },
-            { "System.Collections.IList", new MappedType("Microsoft.UI.Xaml.Interop", "IBindableVector", "Microsoft.UI") },
-            { "System.Collections.Specialized.INotifyCollectionChanged", new MappedType("Microsoft.UI.Xaml.Interop", "INotifyCollectionChanged", "Microsoft.UI") },
-            { "System.Collections.Specialized.NotifyCollectionChangedAction", new MappedType("Microsoft.UI.Xaml.Interop", "NotifyCollectionChangedAction", "Microsoft.UI") },
-            { "System.Collections.Specialized.NotifyCollectionChangedEventArgs", new MappedType("Microsoft.UI.Xaml.Interop", "NotifyCollectionChangedEventArgs", "Microsoft.UI") },
-            { "System.Collections.Specialized.NotifyCollectionChangedEventHandler", new MappedType("Microsoft.UI.Xaml.Interop", "NotifyCollectionChangedEventHandler", "Microsoft.UI") },
+            { "System.Collections.IEnumerable", new MappedType("Windows.UI.Xaml.Interop", "IBindableIterable", "Windows.Foundation.UniversalApiContract") },
+            { "System.Collections.IList", new MappedType("Windows.UI.Xaml.Interop", "IBindableVector", "Windows.Foundation.UniversalApiContract") },
+            { "System.Collections.Specialized.INotifyCollectionChanged", new MappedType("Windows.UI.Xaml.Interop", "INotifyCollectionChanged", "Windows.Foundation.UniversalApiContract") },
+            { "System.Collections.Specialized.NotifyCollectionChangedAction", new MappedType("Windows.UI.Xaml.Interop", "NotifyCollectionChangedAction", "Windows.Foundation.UniversalApiContract") },
+            { "System.Collections.Specialized.NotifyCollectionChangedEventArgs", new MappedType("Windows.UI.Xaml.Interop", "NotifyCollectionChangedEventArgs", "Windows.Foundation.UniversalApiContract") },
+            { "System.Collections.Specialized.NotifyCollectionChangedEventHandler", new MappedType("Windows.UI.Xaml.Interop", "NotifyCollectionChangedEventHandler", "Windows.Foundation.UniversalApiContract") },
             { "WinRT.EventRegistrationToken", new MappedType("Windows.Foundation", "EventRegistrationToken", "Windows.Foundation.FoundationContract", true) },
             { "System.AttributeTargets", new MappedType("Windows.Foundation.Metadata", "AttributeTargets", "Windows.Foundation.FoundationContract", true) },
             { "System.AttributeUsageAttribute", new MappedType("Windows.Foundation.Metadata", "AttributeUsageAttribute", "Windows.Foundation.FoundationContract") },
@@ -1245,7 +1245,7 @@ namespace Generator
             }
             else if (mappedTypeName == "IBindableIterable")
             {
-                AddMethod("First", null, GetType("Microsoft.UI.Xaml.Interop.IBindableIterator"));
+                AddMethod("First", null, GetType("Windows.UI.Xaml.Interop.IBindableIterator"));
             }
             else if (mappedTypeName == "IBindableVector")
             {
@@ -1260,7 +1260,7 @@ namespace Generator
                     new[] { new Parameter(GetType("System.UInt32"), "index", ParameterAttributes.In) },
                     GetType("System.Object")
                 );
-                AddMethod("GetView", null, GetType("Microsoft.UI.Xaml.Interop.IBindableVectorView"));
+                AddMethod("GetView", null, GetType("Windows.UI.Xaml.Interop.IBindableVectorView"));
                 AddMethod(
                     "IndexOf",
                     new[] {
