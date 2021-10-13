@@ -11,28 +11,29 @@ rem Install required .NET SDK version and add to environment
 set DOTNET_ROOT=%LocalAppData%\Microsoft\dotnet
 set DOTNET_ROOT(86)=%LocalAppData%\Microsoft\dotnet\x86
 set path=%DOTNET_ROOT%;%path%
+set DownloadTimeout=1200
 
 rem Install .net5 to run our projects  targeting it
 powershell -NoProfile -ExecutionPolicy unrestricted -Command ^
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; ^
 &([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) ^
--Version '%CsWinRTNet5SdkVersion%' -InstallDir '%DOTNET_ROOT%' -Architecture 'x64' ^
+-Version '%CsWinRTNet5SdkVersion%' -InstallDir '%DOTNET_ROOT%' -Architecture 'x64' -DownloadTimeout %DownloadTimeout% ^
 -AzureFeed 'https://dotnetcli.blob.core.windows.net/dotnet'
 powershell -NoProfile -ExecutionPolicy unrestricted -Command ^
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; ^
 &([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) ^
--Version '%CsWinRTNet5SdkVersion%' -InstallDir '%DOTNET_ROOT(86)%' -Architecture 'x86' ^
+-Version '%CsWinRTNet5SdkVersion%' -InstallDir '%DOTNET_ROOT(86)%' -Architecture 'x86' -DownloadTimeout %DownloadTimeout% ^
 -AzureFeed 'https://dotnetcli.blob.core.windows.net/dotnet'
 rem Install .NET Version used to build projection
 powershell -NoProfile -ExecutionPolicy unrestricted -Command ^
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; ^
 &([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) ^
--Version '%CsWinRTBuildNetSDKVersion%' -InstallDir '%DOTNET_ROOT%' -Architecture 'x64' ^
+-Version '%CsWinRTBuildNetSDKVersion%' -InstallDir '%DOTNET_ROOT%' -Architecture 'x64' -DownloadTimeout %DownloadTimeout% ^
 -AzureFeed 'https://dotnetcli.blob.core.windows.net/dotnet'
 powershell -NoProfile -ExecutionPolicy unrestricted -Command ^
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; ^
 &([scriptblock]::Create((Invoke-WebRequest -UseBasicParsing 'https://dot.net/v1/dotnet-install.ps1'))) ^
--Version '%CsWinRTBuildNetSDKVersion%' -InstallDir '%DOTNET_ROOT(86)%' -Architecture 'x86' ^
+-Version '%CsWinRTBuildNetSDKVersion%' -InstallDir '%DOTNET_ROOT(86)%' -Architecture 'x86' -DownloadTimeout %DownloadTimeout% ^
 -AzureFeed 'https://dotnetcli.blob.core.windows.net/dotnet'
 
 :globaljson
@@ -157,7 +158,6 @@ rem if %cswinrt_platform%==arm64 goto :eof
 rem :test
 rem :unittest
 rem Build/Run xUnit tests, generating xml output report for Azure Devops reporting, via XunitXml.TestLogger NuGet
-rem echo Running cswinrt unit tests for %cswinrt_platform% %cswinrt_configuration%
 rem if %cswinrt_platform%==x86 (
 rem   set dotnet_exe="%DOTNET_ROOT(86)%\dotnet.exe"
 rem ) else (
@@ -173,15 +173,19 @@ rem )
 rem 
 rem :objectlifetimetests
 rem rem Running Object Lifetime Unit Tests
-rem pushd .
-rem cd %this_dir%\Tests\ObjectLifetimeTests\bin\%cswinrt_platform%\%cswinrt_configuration%\net5.0-windows10.0.19041.0\win10-%cswinrt_platform%
-rem sn -Vr Microsoft.Windows.SDK.NET.dll
-rem vstest.console.exe ObjectLifetimeTests.Lifted.build.appxrecipe /TestAdapterPath:"%USERPROFILE%\.nuget\packages\mstest.testadapter\2.2.4-preview-20210513-02\build\_common" /framework:FrameworkUap10 /logger:trx;LogFileName=%this_dir%\VsTestResults.trx 
-rem popd
+rem echo Running object lifetime tests for %cswinrt_platform% %cswinrt_configuration%
+rem if '%NUGET_PACKAGES%'=='' set NUGET_PACKAGES=%USERPROFILE%\.nuget\packages
+rem call :exec vstest.console.exe %this_dir%\Tests\ObjectLifetimeTests\bin\%cswinrt_platform%\%cswinrt_configuration%\net5.0-windows10.0.19041.0\win10-%cswinrt_platform%\ObjectLifetimeTests.Lifted.build.appxrecipe /TestAdapterPath:"%NUGET_PACKAGES%\mstest.testadapter\2.2.4-preview-20210513-02\build\_common" /framework:FrameworkUap10 /logger:trx;LogFileName=%this_dir%\VsTestResults.trx 
+rem if ErrorLevel 1 (
+rem   echo.
+rem   echo ERROR: Lifetime test failed, skipping NuGet pack
+rem   exit /b !ErrorLevel!
+rem )
 rem 
 rem rem WinUI NuGet package's Microsoft.WinUI.AppX.targets attempts to import a file that does not exist, even when
 rem rem executing "dotnet test --no-build ...", which evidently still needs to parse and load the entire project.
 rem rem Work around by using a dummy targets file and assigning it to the MsAppxPackageTargets property.
+rem echo Running cswinrt unit tests for %cswinrt_platform% %cswinrt_configuration%
 rem echo ^<Project/^> > %temp%\EmptyMsAppxPackage.Targets
 rem call :exec %dotnet_exe% test --verbosity normal --no-build --logger xunit;LogFilePath=%~dp0unittest_%cswinrt_version_string%.xml %this_dir%Tests/unittest/UnitTest.csproj /nologo /m /p:platform=%cswinrt_platform%;configuration=%cswinrt_configuration%;MsAppxPackageTargets=%temp%\EmptyMsAppxPackage.Targets 
 rem if ErrorLevel 1 (

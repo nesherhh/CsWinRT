@@ -64,7 +64,7 @@ namespace WinRT.Host
 #else
         private class ActivationLoader : AssemblyLoadContext
         {
-            private static readonly ConcurrentDictionary<string, ActivationLoader> ALCMapping = new ConcurrentDictionary<string, ActivationLoader>();
+            private static readonly ConcurrentDictionary<string, ActivationLoader> ALCMapping = new ConcurrentDictionary<string, ActivationLoader>(StringComparer.Ordinal);
             private AssemblyDependencyResolver _resolver;
 
             public static Assembly LoadAssembly(string targetAssembly)
@@ -80,7 +80,7 @@ namespace WinRT.Host
                 AssemblyLoadContext.Default.Resolving += (AssemblyLoadContext assemblyLoadContext, AssemblyName assemblyName) =>
                 {
                     // Consolidate all WinRT.Runtime loads to the default ALC, or failing that, the first shim ALC 
-                    if (assemblyName.Name == "WinRT.Runtime" ||assemblyName.Name == "WindowsSDKContracts")
+                    if ((string.CompareOrdinal(assemblyName.Name, "WinRT.Runtime") == 0) || (string.CompareOrdinal(assemblyName.Name, "WindowsSDKContracts") == 0))
                     {
                         string assemblyPath = _resolver.ResolveAssemblyToPath(assemblyName);
                         if (assemblyPath != null)
@@ -94,7 +94,7 @@ namespace WinRT.Host
 
             protected override Assembly Load(AssemblyName assemblyName)
             {
-                if (assemblyName.Name != "WinRT.Runtime" && assemblyName.Name != "WindowsSDKContracts")
+                if ((string.CompareOrdinal(assemblyName.Name, "WinRT.Runtime") != 0) && (string.CompareOrdinal(assemblyName.Name, "WindowsSDKContracts") != 0))
                 {
                     string assemblyPath = _resolver.ResolveAssemblyToPath(assemblyName);
                     if (assemblyPath != null)

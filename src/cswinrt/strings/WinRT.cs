@@ -2,12 +2,11 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Linq.Expressions;
 using System.Diagnostics;
 using WinRT.Interop;
-using System.Runtime.CompilerServices;
 
 #pragma warning disable 0169 // The field 'xxx' is never used
 #pragma warning disable 0649 // Field 'xxx' is never assigned to, and will always have its default value
@@ -20,12 +19,6 @@ namespace WinRT
         public static void DynamicInvokeAbi(this System.Delegate del, object[] invoke_params)
         {
             Marshal.ThrowExceptionForHR((int)del.DynamicInvoke(invoke_params));
-        }
-
-        public static T AsDelegate<T>(this MulticastDelegate del)
-        {
-            return Marshal.GetDelegateForFunctionPointer<T>(
-                Marshal.GetFunctionPointerForDelegate(del));
         }
     }
 
@@ -44,16 +37,16 @@ namespace WinRT
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static extern bool FreeLibrary(IntPtr moduleHandle);
 
-        [DllImport("kernel32.dll", SetLastError = true, BestFitMapping = false)]
-        internal static extern IntPtr GetProcAddress(IntPtr moduleHandle, [MarshalAs(UnmanagedType.LPStr)] string functionName);
-        internal static T GetProcAddress<T>(IntPtr moduleHandle)
+        [DllImport("kernel32.dll", EntryPoint = "GetProcAddress", SetLastError = true, BestFitMapping = false)]
+        internal static unsafe extern void* TryGetProcAddress(IntPtr moduleHandle, [MarshalAs(UnmanagedType.LPStr)] string functionName);
+        internal static unsafe void* GetProcAddress(IntPtr moduleHandle, string functionName)
         {
-            IntPtr functionPtr = Platform.GetProcAddress(moduleHandle, typeof(T).Name);
-            if (functionPtr == IntPtr.Zero)
+            void* functionPtr = Platform.TryGetProcAddress(moduleHandle, functionName);
+            if (functionPtr == null)
             {
-                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
+                Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error(), new IntPtr(-1));
             }
-            return Marshal.GetDelegateForFunctionPointer<T>(functionPtr);
+            return functionPtr;
         }
 
         [DllImport("kernel32.dll", SetLastError = true)]
@@ -92,24 +85,16 @@ namespace WinRT
         public IntPtr Vftbl;
     }
 
-    internal class DllModule
+    internal unsafe class DllModule
     {
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public unsafe delegate int DllGetActivationFactory(
-            IntPtr activatableClassId,
-            out IntPtr activationFactory);
-
-        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        public unsafe delegate int DllCanUnloadNow();
-
         readonly string _fileName;
         readonly IntPtr _moduleHandle;
-        readonly DllGetActivationFactory _GetActivationFactory;
-        readonly DllCanUnloadNow _CanUnloadNow; // TODO: Eventually periodically call
+        readonly delegate* unmanaged[Stdcall]<IntPtr, IntPtr*, int> _GetActivationFactory;
+        readonly delegate* unmanaged[Stdcall]<int> _CanUnloadNow; // TODO: Eventually periodically call
 
         static readonly string _currentModuleDirectory = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
-        static Dictionary<string, DllModule> _cache = new System.Collections.Generic.Dictionary<string, DllModule>();
+        static Dictionary<string, DllModule> _cache = new System.Collections.Generic.Dictionary<string, DllModule>(StringComparer.Ordinal);
 
         public static bool TryLoad(string fileName, out DllModule module)
         {
@@ -128,7 +113,7 @@ namespace WinRT
             }
         }
 
-        static bool TryCreate(string fileName, out DllModule module)
+        static unsafe bool TryCreate(string fileName, out DllModule module)
         {
             // Explicitly look for module in the same directory as this one, and
             // use altered search path to ensure any dependencies in the same directory are found.
@@ -145,8 +130,8 @@ namespace WinRT
                 return false;
             }
 
-            var getActivationFactory = Platform.GetProcAddress(moduleHandle, nameof(DllGetActivationFactory));
-            if (getActivationFactory == IntPtr.Zero)
+            var getActivationFactory = Platform.TryGetProcAddress(moduleHandle, "DllGetActivationFactory");
+            if (getActivationFactory == null)
             {
                 module = null;
                 return false;
@@ -155,20 +140,20 @@ namespace WinRT
             module = new DllModule(
                 fileName, 
                 moduleHandle, 
-                Marshal.GetDelegateForFunctionPointer<DllGetActivationFactory>(getActivationFactory));
+                getActivationFactory);
             return true;
         }
 
-        DllModule(string fileName, IntPtr moduleHandle, DllGetActivationFactory getActivationFactory)
+        DllModule(string fileName, IntPtr moduleHandle, void* getActivationFactory)
         {
             _fileName = fileName;
             _moduleHandle = moduleHandle;
-            _GetActivationFactory = getActivationFactory;
+            _GetActivationFactory = (delegate* unmanaged[Stdcall]<IntPtr, IntPtr*, int>)getActivationFactory;
 
-            var canUnloadNow = Platform.GetProcAddress(_moduleHandle, nameof(DllCanUnloadNow));
-            if (canUnloadNow != IntPtr.Zero)
+            var canUnloadNow = Platform.TryGetProcAddress(_moduleHandle, "DllCanUnloadNow");
+            if (canUnloadNow != null)
             {
-                _CanUnloadNow = Marshal.GetDelegateForFunctionPointer<DllCanUnloadNow>(canUnloadNow);
+                _CanUnloadNow = (delegate* unmanaged[Stdcall]<int>)canUnloadNow;
             }
         }
 
@@ -176,8 +161,15 @@ namespace WinRT
         {
             IntPtr instancePtr;
             var hstrRuntimeClassId = MarshalString.CreateMarshaler(runtimeClassId);
-            int hr = _GetActivationFactory(MarshalString.GetAbi(hstrRuntimeClassId), out instancePtr);
-            return (hr == 0 ? ObjectReference<IActivationFactoryVftbl>.Attach(ref instancePtr) : null, hr);
+            try
+            {
+                int hr = _GetActivationFactory(MarshalString.GetAbi(hstrRuntimeClassId), &instancePtr);
+                return (hr == 0 ? ObjectReference<IActivationFactoryVftbl>.Attach(ref instancePtr) : null, hr);
+            }
+            finally
+            {
+                hstrRuntimeClassId.Dispose();
+            }
         }
 
         ~DllModule()
@@ -285,7 +277,7 @@ namespace WinRT
                     if (_IActivationFactory != null) { return; }
                 }
 
-                var lastSegment = moduleName.LastIndexOf(".");
+                var lastSegment = moduleName.LastIndexOf(".", StringComparison.Ordinal);
                 if (lastSegment <= 0)
                 {
                     Marshal.ThrowExceptionForHR(hr);
@@ -362,6 +354,8 @@ namespace WinRT
             private readonly IntPtr obj;
             private readonly int index;
             private readonly System.WeakReference<State> cacheEntry;
+            private IntPtr eventInvokePtr;
+            private IntPtr referenceTrackerTargetPtr;
 
             protected State(IntPtr obj, int index)
             {
@@ -405,6 +399,52 @@ namespace WinRT
                 Dispose(true);
                 GC.SuppressFinalize(this);
             }
+
+            public void InitalizeReferenceTracking(IntPtr ptr)
+            {
+                eventInvokePtr = ptr;
+                Guid iid = typeof(IReferenceTrackerTargetVftbl).GUID;
+                int hr = Marshal.QueryInterface(ptr, ref iid, out referenceTrackerTargetPtr);
+                if (hr != 0)
+                {
+                    referenceTrackerTargetPtr = default;
+                }
+                else
+                {
+                    // We don't want to keep ourselves alive and as long as this object
+                    // is alive, the CCW still exists.
+                    Marshal.Release(referenceTrackerTargetPtr);
+                }
+            }
+
+            public bool HasComReferences()
+            {
+                if (eventInvokePtr != default)
+                {
+                    IUnknownVftbl vftblIUnknown = **(IUnknownVftbl**)eventInvokePtr;
+                    vftblIUnknown.AddRef(eventInvokePtr);
+                    uint comRefCount = vftblIUnknown.Release(eventInvokePtr);
+                    if (comRefCount != 0)
+                    {
+                        return true;
+                    }
+                }
+
+                if (referenceTrackerTargetPtr != default)
+                {
+                    IReferenceTrackerTargetVftbl vftblReferenceTracker = **(IReferenceTrackerTargetVftbl**)referenceTrackerTargetPtr;
+                    vftblReferenceTracker.AddRefFromReferenceTracker(referenceTrackerTargetPtr);
+                    uint refTrackerCount = vftblReferenceTracker.ReleaseFromReferenceTracker(referenceTrackerTargetPtr);
+                    if (refTrackerCount != 0)
+                    {
+                        // Note we can't tell if the reference tracker ref is pegged or not, so this is best effort where if there
+                        // are any reference tracker references, we assume the event has references.
+                        return true;
+                    }
+                }
+
+                return false;
+            }
         }
         protected System.WeakReference<State> _state;
 
@@ -433,7 +473,11 @@ namespace WinRT
             lock (this)
             {
                 State state = null;
-                bool registerHandler = _state is null || !_state.TryGetTarget(out state);
+                bool registerHandler =
+                    _state is null ||
+                    !_state.TryGetTarget(out state) ||
+                    // We have a wrapper delegate, but no longer has any references from any event source.
+                    !state.HasComReferences();
                 if (registerHandler)
                 {
                     state = CreateEventState();
@@ -449,6 +493,7 @@ namespace WinRT
                     try
                     {
                         var nativeDelegate = GetAbi(marshaler);
+                        state.InitalizeReferenceTracking(nativeDelegate);
                         ExceptionHelpers.ThrowExceptionForHR(_addHandler(_obj.ThisPtr, nativeDelegate, out state.token));
                     }
                     finally
@@ -552,8 +597,12 @@ namespace WinRT
 #if NETSTANDARD2_0
                     var weakRefSource = (IWeakReferenceSource)typeof(IWeakReferenceSource).GetHelperType().GetConstructor(new[] { typeof(IObjectReference) }).Invoke(new object[] { obj });
 #else
-                    var weakRefSource = (IWeakReferenceSource)(object)new WinRT.IInspectable(obj);
+                    var weakRefSource = ((object)new WinRT.IInspectable(obj)) as IWeakReferenceSource;
 #endif
+                    if (weakRefSource == null)
+                    {
+                        return;
+                    }
                     target = weakRefSource.GetWeakReference();
                 }
                 catch (Exception)

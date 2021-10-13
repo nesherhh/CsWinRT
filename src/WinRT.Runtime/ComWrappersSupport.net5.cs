@@ -92,13 +92,6 @@ namespace WinRT
             var flags = tryUseCache ? CreateObjectFlags.TrackerObject : CreateObjectFlags.TrackerObject | CreateObjectFlags.UniqueInstance;
             var rcw = ComWrappers.GetOrCreateObjectForComInstance(ptr, flags);
             CreateRCWType.Value = null;
-            
-            // Resurrect IWinRTObject's disposed IObjectReferences, if necessary
-            if (rcw is IWinRTObject winrtObj)
-            {
-                winrtObj.Resurrect();
-            }
-
             // Because .NET will de-duplicate strings and WinRT doesn't,
             // our RCW factory returns a wrapper of our string instance.
             // This ensures that ComWrappers never sees the same managed object for two different
@@ -106,11 +99,17 @@ namespace WinRT
             // and consumers get a string object for a Windows.Foundation.IReference<String>.
             // We need to do the same thing for System.Type because there can be multiple WUX.Interop.TypeName's
             // for a single System.Type.
+
+            // Resurrect IWinRTObject's disposed IObjectReferences, if necessary
+            if (rcw is IWinRTObject winrtObj)
+            {
+                winrtObj.Resurrect();
+            }
+
             return rcw switch
             {
                 ABI.System.Nullable<string> ns => (T)(object)ns.Value,
                 ABI.System.Nullable<Type> nt => (T)(object)nt.Value,
-                ValueTypeWrapper vt => (T) vt.Value,
                 T castRcw => castRcw,
                 _ when tryUseCache => CreateRcwForComObject<T>(ptr, false),
                 _ => throw new ArgumentException(string.Format("Unable to create a wrapper object. The WinRT object {0} has type {1} which cannot be assigned to type {2}", ptr, rcw.GetType(), typeof(T)))
@@ -230,7 +229,7 @@ namespace WinRT
                 // otherwise the new instance will be used. Since the inner was composed
                 // it should answer immediately without going through the outer. Either way
                 // the reference count will go to the new instance.
-                Guid iid = typeof(IReferenceTrackerVftbl).GUID;
+                Guid iid = IReferenceTrackerVftbl.IID;
                 int hr = Marshal.QueryInterface(objRef.ThisPtr, ref iid, out referenceTracker);
                 if (hr != 0)
                 {
@@ -331,7 +330,7 @@ namespace WinRT
         {
             if (objRef.ReferenceTrackerPtr == IntPtr.Zero)
             {
-                Guid iid = typeof(IReferenceTrackerVftbl).GUID;
+                Guid iid = IReferenceTrackerVftbl.IID;
                 int hr = Marshal.QueryInterface(objRef.ThisPtr, ref iid, out var referenceTracker);
                 if (hr == 0)
                 {
@@ -435,7 +434,7 @@ namespace WinRT
 
         private static object CreateObject(IObjectReference objRef)
         {
-            if (objRef.TryAs<IInspectable.Vftbl>(out var inspectableRef) == 0)
+            if (objRef.TryAs<IInspectable.Vftbl>(IInspectable.IID, out var inspectableRef) == 0)
             {
                 IInspectable inspectable = new IInspectable(inspectableRef);
 
@@ -446,9 +445,10 @@ namespace WinRT
                     // we use the Inspectable wrapper directly.
                     return inspectable;
                 }
+
                 return ComWrappersSupport.GetTypedRcwFactory(runtimeClassName)(inspectable);
             }
-            else if (objRef.TryAs<ABI.WinRT.Interop.IWeakReference.Vftbl>(out var weakRef) == 0)
+            else if (objRef.TryAs<ABI.WinRT.Interop.IWeakReference.Vftbl>(ABI.WinRT.Interop.IWeakReference.IID, out var weakRef) == 0)
             {
                 // IWeakReference is IUnknown-based, so implementations of it may not (and likely won't) implement
                 // IInspectable. As a result, we need to check for them explicitly.

@@ -26,7 +26,7 @@ namespace WinRT
 {
     public static partial class ComWrappersSupport
     {
-        private readonly static ConcurrentDictionary<string, Func<IInspectable, object>> TypedObjectFactoryCache = new ConcurrentDictionary<string, Func<IInspectable, object>>();
+        private readonly static ConcurrentDictionary<string, Func<IInspectable, object>> TypedObjectFactoryCache = new ConcurrentDictionary<string, Func<IInspectable, object>>(StringComparer.Ordinal);
         private readonly static ConditionalWeakTable<object, object> CCWTable = new ConditionalWeakTable<object, object>();
 
         public static TReturn MarshalDelegateInvoke<TDelegate, TReturn>(IntPtr thisPtr, Func<TDelegate, TReturn> invoke)
@@ -63,45 +63,44 @@ namespace WinRT
                 return null;
             }
 
-            using var unknownRef = ObjectReference<IUnknownVftbl>.FromAbi(externalComObject);
+            var unknownRef = ObjectReference<IUnknownVftbl>.FromAbi(externalComObject);
 
-            if (IsFreeThreaded())
+            if (IsFreeThreaded(unknownRef))
             {
-                return unknownRef.As<IUnknownVftbl>();
+                return unknownRef;
             }
             else
             {
-                return new ObjectReferenceWithContext<IUnknownVftbl>(
-                    unknownRef.GetRef(),
-                    Context.GetContextCallback(),
-                    Context.GetContextToken());
+                using (unknownRef)
+                {
+                    return new ObjectReferenceWithContext<IUnknownVftbl>(
+                        unknownRef.GetRef(),
+                        Context.GetContextCallback(),
+                        Context.GetContextToken());
+                }
             }
 
             // If we are free threaded, we do not need to keep track of context.
             // This can either be if the object implements IAgileObject or the free threaded marshaler.
-            unsafe bool IsFreeThreaded()
+            unsafe static bool IsFreeThreaded(IObjectReference unknownRef)
             {
-                if (unknownRef.TryAs<IUnknownVftbl>(typeof(ABI.WinRT.Interop.IAgileObject.Vftbl).GUID, out var agileRef) >= 0)
+                if (unknownRef.TryAs(ABI.WinRT.Interop.IAgileObject.IID, out var agilePtr) >= 0)
                 {
-                    agileRef.Dispose();
+                    Marshal.Release(agilePtr);
                     return true;
                 }
-                else if (unknownRef.TryAs<ABI.WinRT.Interop.IMarshal.Vftbl>(out var marshalRef) >= 0)
+                else if (unknownRef.TryAs<ABI.WinRT.Interop.IMarshal.Vftbl>(ABI.WinRT.Interop.IMarshal.IID, out var marshalRef) >= 0)
                 {
-                    try
+                    using (marshalRef)
                     {
-                        Guid iid_IUnknown = typeof(IUnknownVftbl).GUID;
+                        Guid iid_IUnknown = IUnknownVftbl.IID;
                         Guid iid_unmarshalClass;
-                        var marshaler = new ABI.WinRT.Interop.IMarshal(marshalRef);
-                        marshaler.GetUnmarshalClass(&iid_IUnknown, IntPtr.Zero, MSHCTX.InProc, IntPtr.Zero, MSHLFLAGS.Normal, &iid_unmarshalClass);
+                        Marshal.ThrowExceptionForHR(marshalRef.Vftbl.GetUnmarshalClass_0(
+                            marshalRef.ThisPtr, &iid_IUnknown, IntPtr.Zero, MSHCTX.InProc, IntPtr.Zero, MSHLFLAGS.Normal, &iid_unmarshalClass));
                         if (iid_unmarshalClass == ABI.WinRT.Interop.IMarshal.IID_InProcFreeThreadedMarshaler.Value)
                         {
                             return true;
                         }
-                    }
-                    finally 
-                    {
-                        marshalRef.Dispose();
                     }
                 }
                 return false;
@@ -244,7 +243,7 @@ namespace WinRT
                 iids[i] = interfaceTableEntries[i].IID;
             }
 
-            if (type.FullName.StartsWith("ABI."))
+            if (type.FullName.StartsWith("ABI.", StringComparison.Ordinal))
             {
                 type = Projections.FindCustomPublicTypeForAbiType(type) ?? type.Assembly.GetType(type.FullName.Substring("ABI.".Length)) ?? type;
             }
@@ -261,7 +260,7 @@ namespace WinRT
 
         private static bool IsIReferenceArray(Type implementationType)
         {
-            return implementationType.FullName.StartsWith("Windows.Foundation.IReferenceArray`1");
+            return implementationType.FullName.StartsWith("Windows.Foundation.IReferenceArray`1", StringComparison.Ordinal);
         }
 
         private static Func<IInspectable, object> CreateKeyValuePairFactory(Type type)
@@ -282,9 +281,8 @@ namespace WinRT
                     Expression.Call(parms[0],
                         typeof(IInspectable).GetMethod(nameof(IInspectable.As)).MakeGenericMethod(vftblType)));
 
-            var getValueExpression = Expression.Convert(Expression.Property(createInterfaceInstanceExpression, "Value"), typeof(object));
-            var setValueInWrapperexpression = Expression.New(typeof(ValueTypeWrapper).GetConstructor(new[] { typeof(object) }), getValueExpression);
-            return Expression.Lambda<Func<IInspectable, object>>(setValueInWrapperexpression, parms).Compile();
+            return Expression.Lambda<Func<IInspectable, object>>(
+                Expression.Convert(Expression.Property(createInterfaceInstanceExpression, "Value"), typeof(object)), parms).Compile();
         }
 
         private static Func<IInspectable, object> CreateArrayFactory(Type implementationType)
@@ -297,26 +295,40 @@ namespace WinRT
                     Expression.Call(parms[0],
                         typeof(IInspectable).GetMethod(nameof(IInspectable.As)).MakeGenericMethod(vftblType)));
 
-            var getValueExpression = Expression.Property(createInterfaceInstanceExpression, "Value");
-            var setValueInWrapperexpression = Expression.New(typeof(ValueTypeWrapper).GetConstructor(new[] { typeof(object) }), getValueExpression);
-            return Expression.Lambda<Func<IInspectable, object>>(setValueInWrapperexpression, parms).Compile();
+            return Expression.Lambda<Func<IInspectable, object>>(
+                Expression.Property(createInterfaceInstanceExpression, "Value"), parms).Compile();
+        }
+
+        // This is used to hold the reference to the native value type object (IReference) until the actual value in it (boxed as an object) gets cleaned up by GC
+        // This is done to avoid pointer reuse until GC cleans up the boxed object
+        private static ConditionalWeakTable<object, IInspectable> _boxedValueReferenceCache = new();
+
+        private static Func<IInspectable, object> CreateReferenceCachingFactory(Func<IInspectable, object> internalFactory)
+        {
+            return inspectable =>
+            {
+                object resultingObject = internalFactory(inspectable);
+                _boxedValueReferenceCache.Add(resultingObject, inspectable);
+                return resultingObject;
+            };
         }
 
         internal static Func<IInspectable, object> CreateTypedRcwFactory(string runtimeClassName)
         {
             // If runtime class name is empty or "Object", then just use IInspectable.
-            if (string.IsNullOrEmpty(runtimeClassName) || runtimeClassName == "Object")
+            if (string.IsNullOrEmpty(runtimeClassName) || 
+                string.CompareOrdinal(runtimeClassName, "Object") == 0)
             {
                 return (IInspectable obj) => obj;
             }
             // PropertySet and ValueSet can return IReference<String> but Nullable<String> is illegal
-            if (runtimeClassName == "Windows.Foundation.IReference`1<String>")
+            if (string.CompareOrdinal(runtimeClassName, "Windows.Foundation.IReference`1<String>") == 0)
             {
-                return (IInspectable obj) => new ABI.System.Nullable<String>(obj.ObjRef);
+                return CreateReferenceCachingFactory((IInspectable obj) => new ABI.System.Nullable<String>(obj.ObjRef));
             }
-            else if (runtimeClassName == "Windows.Foundation.IReference`1<Windows.UI.Xaml.Interop.TypeName>")
+            else if (string.CompareOrdinal(runtimeClassName, "Windows.Foundation.IReference`1<Windows.UI.Xaml.Interop.TypeName>") == 0)
             {
-                return (IInspectable obj) => new ABI.System.Nullable<Type>(obj.ObjRef);
+                return CreateReferenceCachingFactory((IInspectable obj) => new ABI.System.Nullable<Type>(obj.ObjRef));
             }
 
             Type implementationType = TypeNameSupport.FindTypeByNameCached(runtimeClassName);
@@ -329,23 +341,23 @@ namespace WinRT
 
             if (implementationType.IsGenericType && implementationType.GetGenericTypeDefinition() == typeof(System.Collections.Generic.KeyValuePair<,>))
             {
-                return CreateKeyValuePairFactory(implementationType);
+                return CreateReferenceCachingFactory(CreateKeyValuePairFactory(implementationType));
             }
 
             if (implementationType.IsValueType)
             {
                 if (IsNullableT(implementationType))
                 {
-                    return CreateNullableTFactory(implementationType);
+                    return CreateReferenceCachingFactory(CreateNullableTFactory(implementationType));
                 }
                 else
                 {
-                    return CreateNullableTFactory(typeof(System.Nullable<>).MakeGenericType(implementationType));
+                    return CreateReferenceCachingFactory(CreateNullableTFactory(typeof(System.Nullable<>).MakeGenericType(implementationType)));
                 }
             }
             else if (IsIReferenceArray(implementationType))
             {
-                return CreateArrayFactory(implementationType);
+                return CreateReferenceCachingFactory(CreateArrayFactory(implementationType));
             }
 
             return CreateFactoryForImplementationType(runtimeClassName, implementationType);
@@ -383,9 +395,10 @@ namespace WinRT
             return runtimeClassName;
         }
 
-        private static bool ShouldProvideIReference(Type type)
+        private readonly static ConcurrentDictionary<Type, bool> IsIReferenceTypeCache = new ConcurrentDictionary<Type, bool>();
+        private static bool IsIReferenceType(Type type)
         {
-            static bool IsWindowsRuntimeType(Type type)
+            static bool IsIReferenceTypeHelper(Type type)
             {
                 if ((type.GetCustomAttribute<WindowsRuntimeTypeAttribute>() is object) ||
                     WinRT.Projections.IsTypeWindowsRuntimeType(type))
@@ -400,14 +413,19 @@ namespace WinRT
                 return false;
             }
 
-            if (type == typeof(string) || type.IsTypeOfType())
-                return true;
-            if (type.IsDelegate())
-                return IsWindowsRuntimeType(type);
-            if (!type.IsValueType)
-                return false;
-            return type.IsPrimitive || IsWindowsRuntimeType(type);
+            return IsIReferenceTypeCache.GetOrAdd(type, (type) =>
+            {
+                if (type == typeof(string) || type.IsTypeOfType())
+                    return true;
+                if (type.IsDelegate())
+                    return IsIReferenceTypeHelper(type);
+                if (!type.IsValueType)
+                    return false;
+                return type.IsPrimitive || IsIReferenceTypeHelper(type);
+            });
         }
+
+        private static bool ShouldProvideIReference(Type type) => IsIReferenceType(type);
 
         private static ComInterfaceEntry IPropertyValueEntry =>
             new ComInterfaceEntry
@@ -727,21 +745,6 @@ namespace WinRT
                 IIDs = iids;
             }
 
-        }
-
-        internal class ValueTypeWrapper
-        {
-            private readonly object value;
-
-            public ValueTypeWrapper(object value)
-            {
-                this.value = value;
-            }
-
-            public object Value
-            {
-                get => this.value;
-            }
         }
     }
 }
