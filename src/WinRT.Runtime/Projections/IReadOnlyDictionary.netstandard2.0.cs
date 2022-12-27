@@ -1,14 +1,13 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using WinRT;
 using WinRT.Interop;
+using System.Diagnostics;
 
 #pragma warning disable 0169 // warning CS0169: The field '...' is never used
 #pragma warning disable 0649 // warning CS0169: Field '...' is never assigned to
@@ -16,9 +15,6 @@ using WinRT.Interop;
 namespace Windows.Foundation.Collections
 {
     [Guid("E480CE40-A338-4ADA-ADCF-272272E48CB9")]
-#if EMBED
-    internal
-#endif
     interface IMapView<K, V> : IIterable<IKeyValuePair<K, V>>
     {
         V Lookup(K key);
@@ -34,18 +30,10 @@ namespace ABI.System.Collections.Generic
     using global::System.Runtime.CompilerServices;
 
     [Guid("E480CE40-A338-4ADA-ADCF-272272E48CB9")]
-#if EMBED
-    internal
-#else
-    public
-#endif
-    class IReadOnlyDictionary<K, V> : global::System.Collections.Generic.IReadOnlyDictionary<K, V>
+    public class IReadOnlyDictionary<K, V> : global::System.Collections.Generic.IReadOnlyDictionary<K, V>
     {
         public static IObjectReference CreateMarshaler(global::System.Collections.Generic.IReadOnlyDictionary<K, V> obj) =>
-            obj is null ? null : ComWrappersSupport.CreateCCWForObject<Vftbl>(obj, GuidGenerator.GetIID(typeof(IReadOnlyDictionary<K, V>)));
-
-        public static ObjectReferenceValue CreateMarshaler2(global::System.Collections.Generic.IReadOnlyDictionary<K, V> obj) => 
-            ComWrappersSupport.CreateCCWForObjectForMarshaling(obj, GuidGenerator.GetIID(typeof(IReadOnlyDictionary<K, V>)));
+            obj is null ? null : ComWrappersSupport.CreateCCWForObject(obj).As<Vftbl>(GuidGenerator.GetIID(typeof(IReadOnlyDictionary<K, V>)));
 
         public static IntPtr GetAbi(IObjectReference objRef) =>
             objRef?.ThisPtr ?? IntPtr.Zero;
@@ -54,7 +42,7 @@ namespace ABI.System.Collections.Generic
             thisPtr == IntPtr.Zero ? null : new IReadOnlyDictionary<K, V>(ObjRefFromAbi(thisPtr));
 
         public static IntPtr FromManaged(global::System.Collections.Generic.IReadOnlyDictionary<K, V> value) =>
-            (value is null) ? IntPtr.Zero : CreateMarshaler2(value).Detach();
+            (value is null) ? IntPtr.Zero : CreateMarshaler(value).GetRef();
 
         public static void DisposeMarshaler(IObjectReference objRef) => objRef?.Dispose();
 
@@ -193,7 +181,7 @@ namespace ABI.System.Collections.Generic
 
                     if (((uint)int.MaxValue) < size)
                     {
-                        throw new InvalidOperationException(WinRTRuntimeErrorStrings.InvalidOperation_CollectionBackingDictionaryTooLarge);
+                        throw new InvalidOperationException(ErrorStrings.InvalidOperation_CollectionBackingDictionaryTooLarge);
                     }
 
                     return (int)size;
@@ -264,7 +252,7 @@ namespace ABI.System.Collections.Generic
                 catch (Exception ex)
                 {
                     if (ExceptionHelpers.E_BOUNDS == ex.HResult)
-                        throw new KeyNotFoundException(String.Format(WinRTRuntimeErrorStrings.Arg_KeyNotFoundWithKey, key.ToString()));
+                        throw new KeyNotFoundException(ErrorStrings.Format(ErrorStrings.Arg_KeyNotFoundWithKey, key.ToString()));
                     throw;
                 }
             }
@@ -294,7 +282,7 @@ namespace ABI.System.Collections.Generic
 
                 if (!keyFound)
                 {
-                    Exception e = new KeyNotFoundException(String.Format(WinRTRuntimeErrorStrings.Arg_KeyNotFoundWithKey, key.ToString()));
+                    Exception e = new KeyNotFoundException(ErrorStrings.Format(ErrorStrings.Arg_KeyNotFoundWithKey, key.ToString()));
                     e.SetHResult(ExceptionHelpers.E_BOUNDS);
                     throw e;
                 }
@@ -323,7 +311,7 @@ namespace ABI.System.Collections.Generic
 
             private sealed class ConstantSplittableMap : global::Windows.Foundation.Collections.IMapView<K, V>, global::System.Collections.Generic.IReadOnlyDictionary<K, V>
             {
-                private sealed class KeyValuePairComparator : IComparer<global::System.Collections.Generic.KeyValuePair<K, V>>
+                private class KeyValuePairComparator : IComparer<global::System.Collections.Generic.KeyValuePair<K, V>>
                 {
                     private static readonly IComparer<K> keyComparator = Comparer<K>.Default;
 
@@ -392,7 +380,7 @@ namespace ABI.System.Collections.Generic
 
                     if (!found)
                     {
-                        Exception e = new KeyNotFoundException(String.Format(WinRTRuntimeErrorStrings.Arg_KeyNotFoundWithKey, key.ToString()));
+                        Exception e = new KeyNotFoundException(ErrorStrings.Format(ErrorStrings.Arg_KeyNotFoundWithKey, key.ToString()));
                         e.SetHResult(ExceptionHelpers.E_BOUNDS);
                         throw e;
                     }
@@ -490,8 +478,8 @@ namespace ABI.System.Collections.Generic
                 {
                     get
                     {
-                        if (_current < _start) throw new InvalidOperationException(WinRTRuntimeErrorStrings.InvalidOperation_EnumNotStarted);
-                        if (_current > _end) throw new InvalidOperationException(WinRTRuntimeErrorStrings.InvalidOperation_EnumEnded);
+                        if (_current < _start) throw new InvalidOperationException(ErrorStrings.InvalidOperation_EnumNotStarted);
+                        if (_current > _end) throw new InvalidOperationException(ErrorStrings.InvalidOperation_EnumEnded);
                         return _array[_current];
                     }
                 }
@@ -670,7 +658,7 @@ namespace ABI.System.Collections.Generic
             var __params = new object[] { ThisPtr, null, null };
             try
             {
-                __key = Marshaler<K>.CreateMarshaler2(key);
+                __key = Marshaler<K>.CreateMarshaler(key);
                 __params[1] = Marshaler<K>.GetAbi(__key);
                 _obj.Vftbl.Lookup_0.DynamicInvokeAbi(__params);
                 return Marshaler<V>.FromAbi(__params[2]);
@@ -688,7 +676,7 @@ namespace ABI.System.Collections.Generic
             var __params = new object[] { ThisPtr, null, null };
             try
             {
-                __key = Marshaler<K>.CreateMarshaler2(key);
+                __key = Marshaler<K>.CreateMarshaler(key);
                 __params[1] = Marshaler<K>.GetAbi(__key);
                 _obj.Vftbl.HasKey_2.DynamicInvokeAbi(__params);
                 return (byte)__params[2] != 0;
@@ -735,13 +723,7 @@ namespace ABI.System.Collections.Generic
         public global::System.Collections.Generic.IEnumerator<global::System.Collections.Generic.KeyValuePair<K, V>> GetEnumerator() => _FromMapView.GetEnumerator();
         IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
-
-#if EMBED
-    internal
-#else
-    public
-#endif
-    static class IReadOnlyDictionary_Delegates
+    public static class IReadOnlyDictionary_Delegates
     {
         public unsafe delegate int Split_3(IntPtr thisPtr, out IntPtr first, out IntPtr second);
     }

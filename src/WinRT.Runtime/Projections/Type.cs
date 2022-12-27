@@ -1,8 +1,6 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
 using System;
-using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Text;
 using WinRT;
 
 namespace ABI.System
@@ -15,12 +13,7 @@ namespace ABI.System
         Custom
     }
 
-#if EMBED
-    internal
-#else
-    public
-#endif
-    struct Type
+    public struct Type
     {
         private IntPtr Name;
         private TypeKind Kind;
@@ -33,24 +26,6 @@ namespace ABI.System
             internal void Dispose()
             {
                 MarshalString.DisposeMarshaler(Name);
-            }
-        }
-
-        public ref struct Pinnable
-        {
-            internal MarshalString.Pinnable Name;
-            internal TypeKind Kind;
-
-            public Pinnable(global::System.Type type)
-            {
-                var abi = ToAbi(type);
-                Name = new MarshalString.Pinnable(abi.Name);
-                Kind = abi.Kind;
-            }
-
-            public ref readonly char GetPinnableReference()
-            {
-                return ref Name.GetPinnableReference();
             }
         }
 
@@ -74,20 +49,7 @@ namespace ABI.System
                 }
             }
 
-            return (GetNameForTypeCached(value, kind == TypeKind.Custom), kind);
-        }
-
-        private static readonly ConcurrentDictionary<global::System.Type, string> typeNameCache = new();
-        private static string GetNameForTypeCached(global::System.Type value, bool customKind)
-        {
-            if (customKind)
-            {
-                return typeNameCache.GetOrAdd(value, (type) => type.AssemblyQualifiedName);
-            }
-            else
-            {
-                return typeNameCache.GetOrAdd(value, (type) => TypeNameSupport.GetNameForType(type, TypeNameGenerationFlags.None));
-            }
+            return (kind == TypeKind.Custom ? value.AssemblyQualifiedName : TypeNameSupport.GetNameForType(value, TypeNameGenerationFlags.None), kind);
         }
 
         public static Marshaler CreateMarshaler(global::System.Type value)
@@ -97,15 +59,6 @@ namespace ABI.System
             {
                 Name = MarshalString.CreateMarshaler(abi.Name),
                 Kind = abi.Kind
-            };
-        }
-
-        public static Type GetAbi(ref Pinnable p)
-        {
-            return new Type
-            {
-                Name = MarshalString.GetAbi(ref p.Name),
-                Kind = p.Kind
             };
         }
 
@@ -131,7 +84,7 @@ namespace ABI.System
                 return global::System.Type.GetType(name);
             }
 
-            return TypeNameSupport.FindTypeByNameCached(name);
+            return TypeNameSupport.FindTypeByName(name.AsSpan()).type;
         }
 
         public static unsafe void CopyAbi(Marshaler arg, IntPtr dest) =>
@@ -151,7 +104,7 @@ namespace ABI.System
             *(Type*)dest.ToPointer() = FromManaged(arg);
 
         public static void DisposeMarshaler(Marshaler m) { m.Dispose(); }
-        public static void DisposeAbi(Type abi) { MarshalString.DisposeAbi(abi.Name); }
+        public static void DisposeAbi(Type abi) { }
 
         public static string GetGuidSignature()
         {

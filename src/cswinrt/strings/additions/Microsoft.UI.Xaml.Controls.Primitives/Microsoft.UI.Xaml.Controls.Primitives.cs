@@ -5,12 +5,7 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
 
     [global::WinRT.WindowsRuntimeType("Microsoft.UI")]
     [StructLayout(LayoutKind.Sequential)]
-#if EMBED
-    internal
-#else
-    public
-#endif
-    struct GeneratorPosition
+    public struct GeneratorPosition
     {
         private int _index;
         private int _offset;
@@ -60,12 +55,7 @@ namespace Microsoft.UI.Xaml.Controls.Primitives
 
 namespace ABI.Microsoft.UI.Xaml.Controls.Primitives
 {
-#if EMBED
-    internal
-#else
-    public
-#endif
-    static class GeneratorPosition
+    public static class GeneratorPosition
     {
         public static string GetGuidSignature() => $"struct(Microsoft.UI.Xaml.Controls.Primitives.GeneratorPosition;i4;i4)";
     }

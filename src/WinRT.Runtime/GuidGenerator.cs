@@ -1,7 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
-using System;
+﻿using System;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -9,12 +6,7 @@ using System.Text;
 
 namespace WinRT
 {
-#if EMBED
-    internal
-#else 
-    public
-#endif
-    static class GuidGenerator
+    public static class GuidGenerator
     {
         public static Guid GetGUID(Type type)
         {
@@ -33,16 +25,6 @@ namespace WinRT
 
         public static string GetSignature(Type type)
         {
-            if (type == typeof(object))
-            {
-                return "cinterface(IInspectable)";
-            }
-
-            if (type == typeof(string))
-            {
-                return "string";
-            }
-
             var helperType = type.FindHelperType();
             if (helperType != null)
             {
@@ -51,6 +33,18 @@ namespace WinRT
                 {
                     return (string)sigMethod.Invoke(null, null);
                 }
+            }
+
+            type = type.IsInterface ? (type.GetAuthoringMetadataType() ?? type) : type;
+            if (type == typeof(object))
+            {
+                return "cinterface(IInspectable)";
+            }
+
+            if (type.IsGenericType)
+            {
+                var args = type.GetGenericArguments().Select(t => GetSignature(t));
+                return "pinterface({" + GetGUID(type) + "};" + String.Join(";", args) + ")";
             }
 
             if (type.IsValueType)
@@ -74,7 +68,7 @@ namespace WinRT
                         {
                             if (type.IsEnum)
                             {
-                                var isFlags = type.IsDefined(typeof(FlagsAttribute));
+                                var isFlags = type.CustomAttributes.Any(cad => cad.AttributeType == typeof(FlagsAttribute));
                                 return "enum(" + type.FullName + ";" + (isFlags ? "u4" : "i4") + ")";
                             }
                             if (!type.IsPrimitive)
@@ -87,22 +81,19 @@ namespace WinRT
                 }
             }
 
-            type = type.IsInterface ? (type.GetAuthoringMetadataType() ?? type) : type;
-
-            if (type.IsGenericType)
+            if (type == typeof(string))
             {
-                var args = type.GetGenericArguments().Select(t => GetSignature(t));
-                return "pinterface({" + GetGUID(type) + "};" + String.Join(";", args) + ")";
+                return "string";
+            }
+
+            if (Projections.TryGetDefaultInterfaceTypeForRuntimeClassType(type, out Type iface))
+            {
+                return "rc(" + type.FullName + ";" + GetSignature(iface) + ")";
             }
 
             if (type.IsDelegate())
             {
                 return "delegate({" + GetGUID(type) + "})";
-            }
-
-            if (type.IsClass && Projections.TryGetDefaultInterfaceTypeForRuntimeClassType(type, out Type iface))
-            {
-                return "rc(" + type.FullName + ";" + GetSignature(iface) + ")";
             }
 
             return "{" + type.GUID.ToString() + "}";
@@ -130,7 +121,7 @@ namespace WinRT
                 // encode rfc clock/reserved field
                 data[8] = (byte)((data[8] & 0x3f) | 0x80);
             }
-#if !NET
+#if NETSTANDARD2_0
             return new Guid(data.Slice(0, 16).ToArray());
 #else
             return new Guid(data[0..16]);
@@ -146,7 +137,7 @@ namespace WinRT
             {
                 return new Guid(sig);
             }
-#if !NET
+#if NETSTANDARD2_0
             var data = wrt_pinterface_namespace.ToByteArray().Concat(UTF8Encoding.UTF8.GetBytes(sig)).ToArray();
 #else
             var maxBytes = UTF8Encoding.UTF8.GetMaxByteCount(sig.Length);

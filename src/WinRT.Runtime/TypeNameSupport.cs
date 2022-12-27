@@ -1,7 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,9 +10,6 @@ using System.Threading;
 namespace WinRT
 {
     [Flags]
-#if EMBED
-    internal
-#endif
     enum TypeNameGenerationFlags
     {
         None = 0,
@@ -29,13 +23,10 @@ namespace WinRT
         NoCustomTypeName = 0x2
     }
 
-#if EMBED
-    internal
-#endif
     static class TypeNameSupport
     {
-        private static readonly List<Assembly> projectionAssemblies = new List<Assembly>();
-        private static readonly ConcurrentDictionary<string, Type> typeNameCache = new ConcurrentDictionary<string, Type>(StringComparer.Ordinal) { ["TrackerCollection<T>"] = null };
+        private static List<Assembly> projectionAssemblies = new List<Assembly>();
+        private static ConcurrentDictionary<string, Type> typeNameCache = new ConcurrentDictionary<string, Type>(StringComparer.Ordinal) { ["TrackerCollection<T>"] = null };
 
         public static void RegisterProjectionAssembly(Assembly assembly)
         {
@@ -72,24 +63,12 @@ namespace WinRT
         {
             // Assume that anonymous types are expando objects, whether declared 'dynamic' or not.
             // It may be necessary to detect otherwise and return System.Object.
-            if (runtimeClassName.StartsWith("<>f__AnonymousType".AsSpan(), StringComparison.Ordinal))
+            if(runtimeClassName.StartsWith("<>f__AnonymousType".AsSpan(), StringComparison.Ordinal))
             {
                 return (typeof(System.Dynamic.ExpandoObject), 0);
             }
-            // PropertySet and ValueSet can return IReference<String> but Nullable<String> is illegal
-            else if (runtimeClassName.CompareTo("Windows.Foundation.IReference`1<String>".AsSpan(), StringComparison.Ordinal) == 0)
-            {
-                return (typeof(ABI.System.Nullable_string), 0);
-            }
-            else if (runtimeClassName.CompareTo("Windows.Foundation.IReference`1<Windows.UI.Xaml.Interop.TypeName>".AsSpan(), StringComparison.Ordinal) == 0)
-            {
-                return (typeof(ABI.System.Nullable_Type), 0);
-            }
-            else
-            {
-                var (genericTypeName, genericTypes, remaining) = ParseGenericTypeName(runtimeClassName);
-                return (FindTypeByNameCore(genericTypeName, genericTypes), remaining);
-            }
+            var (genericTypeName, genericTypes, remaining) = ParseGenericTypeName(runtimeClassName);
+            return (FindTypeByNameCore(genericTypeName, genericTypes), remaining);
         }
 
         /// <summary>
@@ -145,10 +124,6 @@ namespace WinRT
             {
                 if (genericTypes != null)
                 {
-                    if(resolvedType == typeof(global::System.Nullable<>) && genericTypes[0].IsDelegate())
-                    {
-                        return typeof(ABI.System.Nullable_Delegate<>).MakeGenericType(genericTypes);
-                    }
                     resolvedType = resolvedType.MakeGenericType(genericTypes);
                 }
                 return resolvedType;
@@ -172,7 +147,6 @@ namespace WinRT
                 "Boolean" => typeof(bool),
                 "String" => typeof(string),
                 "Char" => typeof(char),
-                "Char16" => typeof(char),
                 "Single" => typeof(float),
                 "Double" => typeof(double),
                 "Guid" => typeof(Guid),
@@ -368,7 +342,7 @@ namespace WinRT
 
         private static bool TryAppendTypeName(Type type, StringBuilder builder, TypeNameGenerationFlags flags)
         {
-#if !NET
+#if NETSTANDARD2_0
             // We can't easily determine from just the type
             // if the array is an "single dimension index from zero"-array in .NET Standard 2.0,
             // so just approximate it.
@@ -392,7 +366,7 @@ namespace WinRT
                 return TryAppendSimpleTypeName(type, builder, flags);
             }
 
-            if ((flags & TypeNameGenerationFlags.NoCustomTypeName) != 0 && !Projections.IsTypeWindowsRuntimeType(type))
+            if (!Projections.IsTypeWindowsRuntimeType(type) && (flags & TypeNameGenerationFlags.NoCustomTypeName) != 0)
             {
                 return TryAppendWinRTInterfaceNameForType(type, builder, flags);
             }

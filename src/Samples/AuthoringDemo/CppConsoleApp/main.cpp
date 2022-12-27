@@ -1,7 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
-#include "pch.h"
+﻿#include "pch.h"
 #include "iostream"
 
 using namespace winrt;

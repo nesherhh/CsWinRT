@@ -5,12 +5,7 @@ namespace Microsoft.UI.Xaml
 
     [global::WinRT.WindowsRuntimeType("Microsoft.UI")]
     [StructLayout(LayoutKind.Sequential)]
-#if EMBED
-    internal
-#else
-    public
-#endif
-    struct CornerRadius
+    public struct CornerRadius
     {
         private double _TopLeft;
         private double _TopRight;
@@ -151,12 +146,7 @@ namespace Microsoft.UI.Xaml
     }
 
     [global::WinRT.WindowsRuntimeType("Microsoft.UI")]
-#if EMBED
-    internal
-#else
-    public
-#endif
-    enum GridUnitType
+    public enum GridUnitType
     {
         Auto = 0,
         Pixel,
@@ -165,12 +155,7 @@ namespace Microsoft.UI.Xaml
 
     [global::WinRT.WindowsRuntimeType("Microsoft.UI")]
     [StructLayout(LayoutKind.Sequential)]
-#if EMBED
-    internal
-#else
-    public
-#endif
-    struct GridLength
+    public struct GridLength
     {
         private readonly double _unitValue;
         private readonly GridUnitType _unitType;
@@ -282,12 +267,7 @@ namespace Microsoft.UI.Xaml
 
     [global::WinRT.WindowsRuntimeType("Microsoft.UI")]
     [StructLayout(LayoutKind.Sequential)]
-#if EMBED
-    internal
-#else
-    public
-#endif
-    struct Thickness
+    public struct Thickness
     {
         private double _Left;
         private double _Top;
@@ -394,12 +374,7 @@ namespace Microsoft.UI.Xaml
     }
 
     [global::WinRT.WindowsRuntimeType("Microsoft.UI")]
-#if EMBED
-    internal
-#else
-    public
-#endif
-    enum DurationType
+    public enum DurationType
     {
         Automatic,
         TimeSpan,
@@ -408,12 +383,7 @@ namespace Microsoft.UI.Xaml
 
     [global::WinRT.WindowsRuntimeType("Microsoft.UI")]
     [StructLayout(LayoutKind.Sequential)]
-#if EMBED
-    internal
-#else
-    public
-#endif
-    struct Duration
+    public struct Duration
     {
         private readonly TimeSpan _timeSpan;
         private DurationType _durationType;
@@ -699,22 +669,12 @@ namespace Microsoft.UI.Xaml
 
 namespace ABI.Microsoft.UI.Xaml
 {
-#if EMBED
-    internal
-#else
-    public
-#endif
-    static class CornerRadius
+    public static class CornerRadius
     {
         public static string GetGuidSignature() => $"struct(Microsoft.UI.Xaml.CornerRadius;f8;f8;f8;f8)";
     }
 
-#if EMBED
-    internal
-#else
-    public
-#endif
-    static class Duration
+    public static class Duration
     {
         public static string GetGuidSignature()
         {
@@ -724,22 +684,12 @@ namespace ABI.Microsoft.UI.Xaml
         }
     }
 
-#if EMBED
-    internal
-#else
-    public
-#endif
-    static class DurationType
+    public static class DurationType
     {
         public static string GetGuidSignature() => "enum(Microsoft.UI.Xaml.DurationType;i4)";
     }
 
-#if EMBED
-    internal
-#else
-    public
-#endif
-    static class GridLength
+    public static class GridLength
     {
         public static string GetGuidSignature()
         {
@@ -748,22 +698,12 @@ namespace ABI.Microsoft.UI.Xaml
         }
     }
 
-#if EMBED
-    internal
-#else
-    public
-#endif
-    static class GridUnitType
+    public static class GridUnitType
     {
         public static string GetGuidSignature() => "enum(Microsoft.UI.Xaml.GridUnitType;i4)";
     }
 
-#if EMBED
-    internal
-#else
-    public
-#endif
-    static class Thickness
+    public static class Thickness
     {
         public static string GetGuidSignature() => $"struct(Microsoft.UI.Xaml.Thickness;f8;f8;f8;f8)";
     }

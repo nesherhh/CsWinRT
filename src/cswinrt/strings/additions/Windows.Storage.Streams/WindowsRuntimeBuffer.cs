@@ -18,12 +18,7 @@ namespace System.Runtime.InteropServices.WindowsRuntime
     /// Contains an implementation of the WinRT IBuffer interface that conforms to all requirements on classes that implement that interface,
     /// such as implementing additional interfaces.
     /// </summary>
-#if EMBED
-    internal
-#else
-    public
-#endif
-    sealed class WindowsRuntimeBuffer : IBuffer, IBufferByteAccess, IMarshal
+    public sealed class WindowsRuntimeBuffer : IBuffer, IBufferByteAccess, IMarshal
     {
         [DllImport("api-ms-win-core-winrt-robuffer-l1-1-0.dll")]
         private static extern int RoGetBufferMarshaler(out IntPtr bufferMarshalerPtr);

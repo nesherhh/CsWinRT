@@ -5,7 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Reflection;
 
-#if NET
+#if !NETSTANDARD2_0
 using System.Runtime.Loader;
 [assembly: global::System.Runtime.Versioning.SupportedOSPlatform("Windows")]
 #endif
@@ -56,7 +56,7 @@ namespace WinRT.Host
             }
         }
 
-#if !NET
+#if NETSTANDARD2_0
         private static class ActivationLoader
         {
             public static Assembly LoadAssembly(string targetAssembly) => Assembly.LoadFrom(targetAssembly);
@@ -68,10 +68,11 @@ namespace WinRT.Host
             private AssemblyDependencyResolver _resolver;
 
             public static Assembly LoadAssembly(string targetAssembly)
-            {
-                return ALCMapping.GetOrAdd(targetAssembly, (_) => new ActivationLoader(targetAssembly))
-                    .LoadFromAssemblyPath(targetAssembly);
-            }
+			{
+				return AssemblyLoadContext.Default.LoadFromAssemblyPath(targetAssembly);
+				//return ALCMapping.GetOrAdd(targetAssembly, (_) => new ActivationLoader(targetAssembly))
+                //    .LoadFromAssemblyPath(targetAssembly);
+			}
 
             private ActivationLoader(string path)
             {
@@ -79,7 +80,7 @@ namespace WinRT.Host
                 AssemblyLoadContext.Default.Resolving += (AssemblyLoadContext assemblyLoadContext, AssemblyName assemblyName) =>
                 {
                     // Consolidate all WinRT.Runtime loads to the default ALC, or failing that, the first shim ALC 
-                    if (string.CompareOrdinal(assemblyName.Name, "WinRT.Runtime") == 0)
+                    if ((string.CompareOrdinal(assemblyName.Name, "WinRT.Runtime") == 0) || (string.CompareOrdinal(assemblyName.Name, "WindowsSDKContracts") == 0))
                     {
                         string assemblyPath = _resolver.ResolveAssemblyToPath(assemblyName);
                         if (assemblyPath != null)
@@ -93,7 +94,7 @@ namespace WinRT.Host
 
             protected override Assembly Load(AssemblyName assemblyName)
             {
-                if (string.CompareOrdinal(assemblyName.Name, "WinRT.Runtime") != 0)
+                if ((string.CompareOrdinal(assemblyName.Name, "WinRT.Runtime") != 0) && (string.CompareOrdinal(assemblyName.Name, "WindowsSDKContracts") != 0))
                 {
                     string assemblyPath = _resolver.ResolveAssemblyToPath(assemblyName);
                     if (assemblyPath != null)

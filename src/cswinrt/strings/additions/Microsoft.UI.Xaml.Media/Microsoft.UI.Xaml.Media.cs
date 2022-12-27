@@ -5,12 +5,7 @@ namespace Microsoft.UI.Xaml.Media
 
     [global::WinRT.WindowsRuntimeType("Microsoft.UI")]
     [StructLayout(LayoutKind.Sequential)]
-#if EMBED
-    internal
-#else
-    public
-#endif
-    struct Matrix : IFormattable
+    public struct Matrix : IFormattable
     {
         public Matrix(double m11, double m12,
                       double m21, double m22,
@@ -250,12 +245,7 @@ namespace Microsoft.UI.Xaml.Media
 
 namespace ABI.Microsoft.UI.Xaml.Media
 {
-#if EMBED
-    internal
-#else
-    public
-#endif
-    static class Matrix
+    public static class Matrix
     {
         public static string GetGuidSignature() => $"struct(Microsoft.UI.Xaml.Media.Matrix;f8;f8;f8;f8;f8;f8)";
     }

@@ -1,6 +1,3 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -16,12 +13,7 @@ using Windows.Foundation.Collections;
 
 namespace WinRT
 {
-#if EMBED
-    internal
-#else 
-    public
-#endif
-    static class Projections
+    public static class Projections
     {
         private static readonly ReaderWriterLockSlim rwlock = new ReaderWriterLockSlim();
         private static readonly Dictionary<Type, Type> CustomTypeToHelperTypeMappings = new Dictionary<Type, Type>();
@@ -39,31 +31,15 @@ namespace WinRT
             RegisterCustomAbiTypeMappingNoLock(typeof(EventRegistrationToken), typeof(ABI.WinRT.EventRegistrationToken), "Windows.Foundation.EventRegistrationToken");
             
             RegisterCustomAbiTypeMappingNoLock(typeof(Nullable<>), typeof(ABI.System.Nullable<>), "Windows.Foundation.IReference`1");
-            RegisterCustomAbiTypeMappingNoLock(typeof(Nullable<int>), typeof(ABI.System.Nullable_int), "Windows.Foundation.IReference`1<Int32>");
-            RegisterCustomAbiTypeMappingNoLock(typeof(Nullable<byte>), typeof(ABI.System.Nullable_byte), "Windows.Foundation.IReference`1<UInt8>");
-            RegisterCustomAbiTypeMappingNoLock(typeof(Nullable<sbyte>), typeof(ABI.System.Nullable_sbyte), "Windows.Foundation.IReference`1<Int8>");
-            RegisterCustomAbiTypeMappingNoLock(typeof(Nullable<short>), typeof(ABI.System.Nullable_short), "Windows.Foundation.IReference`1<Int16>");
-            RegisterCustomAbiTypeMappingNoLock(typeof(Nullable<ushort>), typeof(ABI.System.Nullable_ushort), "Windows.Foundation.IReference`1<UInt16>");
-            RegisterCustomAbiTypeMappingNoLock(typeof(Nullable<uint>), typeof(ABI.System.Nullable_uint), "Windows.Foundation.IReference`1<UInt32>");
-            RegisterCustomAbiTypeMappingNoLock(typeof(Nullable<long>), typeof(ABI.System.Nullable_long), "Windows.Foundation.IReference`1<Int64>");
-            RegisterCustomAbiTypeMappingNoLock(typeof(Nullable<ulong>), typeof(ABI.System.Nullable_ulong), "Windows.Foundation.IReference`1<UInt64>");
-            RegisterCustomAbiTypeMappingNoLock(typeof(Nullable<float>), typeof(ABI.System.Nullable_float), "Windows.Foundation.IReference`1<Single>");
-            RegisterCustomAbiTypeMappingNoLock(typeof(Nullable<double>), typeof(ABI.System.Nullable_double), "Windows.Foundation.IReference`1<Double>");
-            RegisterCustomAbiTypeMappingNoLock(typeof(Nullable<char>), typeof(ABI.System.Nullable_char), "Windows.Foundation.IReference`1<Char16>");
-            RegisterCustomAbiTypeMappingNoLock(typeof(Nullable<bool>), typeof(ABI.System.Nullable_bool), "Windows.Foundation.IReference`1<Boolean>");
-            RegisterCustomAbiTypeMappingNoLock(typeof(Nullable<Guid>), typeof(ABI.System.Nullable_guid), "Windows.Foundation.IReference`1<Guid>");
-            RegisterCustomAbiTypeMappingNoLock(typeof(Nullable<DateTimeOffset>), typeof(ABI.System.Nullable_DateTimeOffset), "Windows.Foundation.IReference`1<Windows.Foundation.DateTime>");
-            RegisterCustomAbiTypeMappingNoLock(typeof(Nullable<TimeSpan>), typeof(ABI.System.Nullable_TimeSpan), "Windows.Foundation.IReference`1<TimeSpan>");
-
             RegisterCustomAbiTypeMappingNoLock(typeof(DateTimeOffset), typeof(ABI.System.DateTimeOffset), "Windows.Foundation.DateTime");
             RegisterCustomAbiTypeMappingNoLock(typeof(Exception), typeof(ABI.System.Exception), "Windows.Foundation.HResult");
             RegisterCustomAbiTypeMappingNoLock(typeof(TimeSpan), typeof(ABI.System.TimeSpan), "Windows.Foundation.TimeSpan");
             RegisterCustomAbiTypeMappingNoLock(typeof(Uri), typeof(ABI.System.Uri), "Windows.Foundation.Uri", isRuntimeClass: true);
-            RegisterCustomAbiTypeMappingNoLock(typeof(DataErrorsChangedEventArgs), typeof(ABI.System.ComponentModel.DataErrorsChangedEventArgs), "Microsoft.UI.Xaml.Data.DataErrorsChangedEventArgs", isRuntimeClass: true);
-            RegisterCustomAbiTypeMappingNoLock(typeof(PropertyChangedEventArgs), typeof(ABI.System.ComponentModel.PropertyChangedEventArgs), "Microsoft.UI.Xaml.Data.PropertyChangedEventArgs", isRuntimeClass: true);
-            RegisterCustomAbiTypeMappingNoLock(typeof(PropertyChangedEventHandler), typeof(ABI.System.ComponentModel.PropertyChangedEventHandler), "Microsoft.UI.Xaml.Data.PropertyChangedEventHandler");
-            RegisterCustomAbiTypeMappingNoLock(typeof(INotifyDataErrorInfo), typeof(ABI.System.ComponentModel.INotifyDataErrorInfo), "Microsoft.UI.Xaml.Data.INotifyDataErrorInfo");    
-            RegisterCustomAbiTypeMappingNoLock(typeof(INotifyPropertyChanged), typeof(ABI.System.ComponentModel.INotifyPropertyChanged), "Microsoft.UI.Xaml.Data.INotifyPropertyChanged");
+            RegisterCustomAbiTypeMappingNoLock(typeof(DataErrorsChangedEventArgs), typeof(ABI.System.ComponentModel.DataErrorsChangedEventArgs), "Windows.UI.Xaml.Data.DataErrorsChangedEventArgs", isRuntimeClass: true);
+            RegisterCustomAbiTypeMappingNoLock(typeof(PropertyChangedEventArgs), typeof(ABI.System.ComponentModel.PropertyChangedEventArgs), "Windows.UI.Xaml.Data.PropertyChangedEventArgs", isRuntimeClass: true);
+            RegisterCustomAbiTypeMappingNoLock(typeof(PropertyChangedEventHandler), typeof(ABI.System.ComponentModel.PropertyChangedEventHandler), "Windows.UI.Xaml.Data.PropertyChangedEventHandler");
+            RegisterCustomAbiTypeMappingNoLock(typeof(INotifyDataErrorInfo), typeof(ABI.System.ComponentModel.INotifyDataErrorInfo), "Windows.UI.Xaml.Data.INotifyDataErrorInfo");    
+            RegisterCustomAbiTypeMappingNoLock(typeof(INotifyPropertyChanged), typeof(ABI.System.ComponentModel.INotifyPropertyChanged), "Windows.UI.Xaml.Data.INotifyPropertyChanged");
             RegisterCustomAbiTypeMappingNoLock(typeof(ICommand), typeof(ABI.System.Windows.Input.ICommand), "Microsoft.UI.Xaml.Interop.ICommand");
             RegisterCustomAbiTypeMappingNoLock(typeof(IServiceProvider), typeof(ABI.System.IServiceProvider), "Microsoft.UI.Xaml.IXamlServiceProvider");
             RegisterCustomAbiTypeMappingNoLock(typeof(EventHandler<>), typeof(ABI.System.EventHandler<>), "Windows.Foundation.EventHandler`1");
@@ -77,12 +53,12 @@ namespace WinRT
             RegisterCustomAbiTypeMappingNoLock(typeof(IReadOnlyDictionary<,>), typeof(ABI.System.Collections.Generic.IReadOnlyDictionary<,>), "Windows.Foundation.Collections.IMapView`2");
             RegisterCustomAbiTypeMappingNoLock(typeof(IDisposable), typeof(ABI.System.IDisposable), "Windows.Foundation.IClosable");
 
-            RegisterCustomAbiTypeMappingNoLock(typeof(IEnumerable), typeof(ABI.System.Collections.IEnumerable), "Microsoft.UI.Xaml.Interop.IBindableIterable");
-            RegisterCustomAbiTypeMappingNoLock(typeof(IList), typeof(ABI.System.Collections.IList), "Microsoft.UI.Xaml.Interop.IBindableVector");
-            RegisterCustomAbiTypeMappingNoLock(typeof(INotifyCollectionChanged), typeof(ABI.System.Collections.Specialized.INotifyCollectionChanged), "Microsoft.UI.Xaml.Interop.INotifyCollectionChanged");
-            RegisterCustomAbiTypeMappingNoLock(typeof(NotifyCollectionChangedAction), typeof(ABI.System.Collections.Specialized.NotifyCollectionChangedAction), "Microsoft.UI.Xaml.Interop.NotifyCollectionChangedAction");
-            RegisterCustomAbiTypeMappingNoLock(typeof(NotifyCollectionChangedEventArgs), typeof(ABI.System.Collections.Specialized.NotifyCollectionChangedEventArgs), "Microsoft.UI.Xaml.Interop.NotifyCollectionChangedEventArgs", isRuntimeClass: true);
-            RegisterCustomAbiTypeMappingNoLock(typeof(NotifyCollectionChangedEventHandler), typeof(ABI.System.Collections.Specialized.NotifyCollectionChangedEventHandler), "Microsoft.UI.Xaml.Interop.NotifyCollectionChangedEventHandler");
+            RegisterCustomAbiTypeMappingNoLock(typeof(IEnumerable), typeof(ABI.System.Collections.IEnumerable), "Windows.UI.Xaml.Interop.IBindableIterable");
+            RegisterCustomAbiTypeMappingNoLock(typeof(IList), typeof(ABI.System.Collections.IList), "Windows.UI.Xaml.Interop.IBindableVector");
+            RegisterCustomAbiTypeMappingNoLock(typeof(INotifyCollectionChanged), typeof(ABI.System.Collections.Specialized.INotifyCollectionChanged), "Windows.UI.Xaml.Interop.INotifyCollectionChanged");
+            RegisterCustomAbiTypeMappingNoLock(typeof(NotifyCollectionChangedAction), typeof(ABI.System.Collections.Specialized.NotifyCollectionChangedAction), "Windows.UI.Xaml.Interop.NotifyCollectionChangedAction");
+            RegisterCustomAbiTypeMappingNoLock(typeof(NotifyCollectionChangedEventArgs), typeof(ABI.System.Collections.Specialized.NotifyCollectionChangedEventArgs), "Windows.UI.Xaml.Interop.NotifyCollectionChangedEventArgs", isRuntimeClass: true);
+            RegisterCustomAbiTypeMappingNoLock(typeof(NotifyCollectionChangedEventHandler), typeof(ABI.System.Collections.Specialized.NotifyCollectionChangedEventHandler), "Windows.UI.Xaml.Interop.NotifyCollectionChangedEventHandler");
 
             RegisterCustomAbiTypeMappingNoLock(typeof(Matrix3x2), typeof(ABI.System.Numerics.Matrix3x2), "Windows.Foundation.Numerics.Matrix3x2");
             RegisterCustomAbiTypeMappingNoLock(typeof(Matrix4x4), typeof(ABI.System.Numerics.Matrix4x4), "Windows.Foundation.Numerics.Matrix4x4");
@@ -140,11 +116,6 @@ namespace WinRT
 
                 if (publicType.IsGenericType)
                 {
-                    if (CustomTypeToHelperTypeMappings.TryGetValue(publicType, out Type specializedAbiType))
-                    {
-                        return specializedAbiType;
-                    }
-
                     return CustomTypeToHelperTypeMappings.TryGetValue(publicType.GetGenericTypeDefinition(), out Type abiTypeDefinition)
                         ? abiTypeDefinition.MakeGenericType(publicType.GetGenericArguments())
                         : null;
@@ -164,11 +135,6 @@ namespace WinRT
             {
                 if (abiType.IsGenericType)
                 {
-                    if (CustomAbiTypeToTypeMappings.TryGetValue(abiType, out Type specializedPublicType))
-                    {
-                        return specializedPublicType;
-                    }
-
                     return CustomAbiTypeToTypeMappings.TryGetValue(abiType.GetGenericTypeDefinition(), out Type publicTypeDefinition)
                         ? publicTypeDefinition.MakeGenericType(abiType.GetGenericArguments())
                         : null;
@@ -244,7 +210,7 @@ namespace WinRT
                 || type == typeof(string)
                 || type == typeof(Guid)
                 || type == typeof(object)
-                || type.IsDefined(typeof(WindowsRuntimeTypeAttribute));
+                || type.GetCustomAttribute<WindowsRuntimeTypeAttribute>() is object;
         }
 
         // Use TryGetCompatibleWindowsRuntimeTypesForVariantType instead.
@@ -401,28 +367,25 @@ namespace WinRT
             return true;
         }
 
-        private readonly static ConcurrentDictionary<Type, Type> DefaultInterfaceTypeCache = new ConcurrentDictionary<Type, Type>();
         internal static bool TryGetDefaultInterfaceTypeForRuntimeClassType(Type runtimeClass, out Type defaultInterface)
         {
-            defaultInterface = DefaultInterfaceTypeCache.GetOrAdd(runtimeClass, (runtimeClass) =>
+            runtimeClass = runtimeClass.GetRuntimeClassCCWType() ?? runtimeClass;
+            defaultInterface = null;
+            ProjectedRuntimeClassAttribute attr = runtimeClass.GetCustomAttribute<ProjectedRuntimeClassAttribute>();
+            if (attr is null)
             {
-                runtimeClass = runtimeClass.GetRuntimeClassCCWType() ?? runtimeClass;
-                ProjectedRuntimeClassAttribute attr = runtimeClass.GetCustomAttribute<ProjectedRuntimeClassAttribute>();
-                if (attr is null)
-                {
-                    return null;
-                }
+                return false;
+            }
 
-                if (attr.DefaultInterfaceProperty != null)
-                {
-                    return runtimeClass.GetProperty(attr.DefaultInterfaceProperty, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly).PropertyType;
-                }
-                else
-                {
-                    return attr.DefaultInterface;
-                }
-            });
-            return defaultInterface != null;
+            if (attr.DefaultInterfaceProperty != null)
+            {
+                defaultInterface = runtimeClass.GetProperty(attr.DefaultInterfaceProperty, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly).PropertyType;
+            }
+            else
+            {
+                defaultInterface = attr.DefaultInterface;
+            }
+            return true;
         }
 
         internal static Type GetDefaultInterfaceTypeForRuntimeClassType(Type runtimeClass)
@@ -439,7 +402,7 @@ namespace WinRT
             Type projectedType = typeof(T);
             if (projectedType == typeof(object))
             {
-                if (objectReference.TryAs<IInspectable.Vftbl>(InterfaceIIDs.IInspectable_IID, out var inspectablePtr) == 0)
+                if (objectReference.TryAs<IInspectable.Vftbl>(IInspectable.IID, out var inspectablePtr) == 0)
                 {
                     rwlock.EnterReadLock();
                     try

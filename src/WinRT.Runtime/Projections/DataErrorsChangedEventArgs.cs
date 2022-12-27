@@ -1,11 +1,11 @@
-﻿// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using System.Text;
 using WinRT;
 using WinRT.Interop;
+
 
 namespace ABI.Microsoft.UI.Xaml.Data
 {
@@ -25,7 +25,7 @@ namespace ABI.Microsoft.UI.Xaml.Data
 
     [global::WinRT.ObjectReferenceWrapper(nameof(_obj))]
     [Guid("62D0BD1E-B85F-5FCC-842A-7CB0DDA37FE5")]
-    internal unsafe sealed class WinRTDataErrorsChangedEventArgsRuntimeClassFactory
+    internal unsafe class WinRTDataErrorsChangedEventArgsRuntimeClassFactory
     {
         [Guid("62D0BD1E-B85F-5FCC-842A-7CB0DDA37FE5")]
         [StructLayout(LayoutKind.Sequential)]
@@ -39,7 +39,7 @@ namespace ABI.Microsoft.UI.Xaml.Data
 
         public static implicit operator WinRTDataErrorsChangedEventArgsRuntimeClassFactory(IObjectReference obj) => (obj != null) ? new WinRTDataErrorsChangedEventArgsRuntimeClassFactory(obj) : null;
         public static implicit operator WinRTDataErrorsChangedEventArgsRuntimeClassFactory(ObjectReference<Vftbl> obj) => (obj != null) ? new WinRTDataErrorsChangedEventArgsRuntimeClassFactory(obj) : null;
-        private readonly ObjectReference<Vftbl> _obj;
+        protected readonly ObjectReference<Vftbl> _obj;
         public IntPtr ThisPtr => _obj.ThisPtr;
         public ObjectReference<I> AsInterface<I>() => _obj.As<I>();
         public A As<A>() => _obj.AsType<A>();
@@ -51,30 +51,18 @@ namespace ABI.Microsoft.UI.Xaml.Data
 
         public unsafe IObjectReference CreateInstance(string name)
         {
+            MarshalString __name = default;
             IntPtr __retval = default;
             try
             {
-                MarshalString.Pinnable __name = new(name);
-                fixed (void* ___name = __name)
-                {
-                    global::WinRT.ExceptionHelpers.ThrowExceptionForHR(_obj.Vftbl.CreateInstance_0(ThisPtr, MarshalString.GetAbi(ref __name), &__retval));
-                    return ObjectReference<IUnknownVftbl>.Attach(ref __retval);
-                }
+                __name = MarshalString.CreateMarshaler(name);
+                global::WinRT.ExceptionHelpers.ThrowExceptionForHR(_obj.Vftbl.CreateInstance_0(ThisPtr, MarshalString.GetAbi(__name), &__retval));
+                return ObjectReference<IUnknownVftbl>.Attach(ref __retval);
             }
             finally
             {
+                MarshalString.DisposeMarshaler(__name);
                 MarshalInspectable<object>.DisposeAbi(__retval);
-            }
-        }
-
-        public unsafe ObjectReferenceValue CreateInstanceForMarshaling(string name)
-        {
-            IntPtr __retval = default;
-            MarshalString.Pinnable __name = new(name);
-            fixed (void* ___name = __name)
-            {
-                global::WinRT.ExceptionHelpers.ThrowExceptionForHR(_obj.Vftbl.CreateInstance_0(ThisPtr, MarshalString.GetAbi(ref __name), &__retval));
-                return new ObjectReferenceValue(__retval);
             }
         }
     }
@@ -84,21 +72,15 @@ namespace ABI.System.ComponentModel
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
     [StructLayout(LayoutKind.Sequential)]
-#if EMBED
-    internal
-#else
-    public
-#endif
-    unsafe struct DataErrorsChangedEventArgs
+    public unsafe struct DataErrorsChangedEventArgs
     {
-        private sealed class ActivationFactory : BaseActivationFactory
+        private static WeakLazy<ActivationFactory> _factory = new WeakLazy<ActivationFactory>();
+
+        private class ActivationFactory : BaseActivationFactory
         {
             public ActivationFactory() : base("Microsoft.UI.Xaml.Data", "Microsoft.UI.Xaml.Data.DataErrorsChangedEventArgs")
             {
             }
-
-            internal static ABI.Microsoft.UI.Xaml.Data.WinRTDataErrorsChangedEventArgsRuntimeClassFactory Instance =
-                new ActivationFactory()._As<ABI.Microsoft.UI.Xaml.Data.WinRTDataErrorsChangedEventArgsRuntimeClassFactory.Vftbl>();
         }
 
         public static IObjectReference CreateMarshaler(global::System.ComponentModel.DataErrorsChangedEventArgs value)
@@ -108,17 +90,8 @@ namespace ABI.System.ComponentModel
                 return null;
             }
 
-            return ActivationFactory.Instance.CreateInstance(value.PropertyName);
-        }
-
-        public static ObjectReferenceValue CreateMarshaler2(global::System.ComponentModel.DataErrorsChangedEventArgs value)
-        {
-            if (value is null)
-            {
-                return new ObjectReferenceValue();
-            }
-
-            return ActivationFactory.Instance.CreateInstanceForMarshaling(value.PropertyName);
+            ABI.Microsoft.UI.Xaml.Data.WinRTDataErrorsChangedEventArgsRuntimeClassFactory factory = _factory.Value._As<ABI.Microsoft.UI.Xaml.Data.WinRTDataErrorsChangedEventArgsRuntimeClassFactory.Vftbl>();
+            return factory.CreateInstance(value.PropertyName);
         }
 
         public static IntPtr GetAbi(IObjectReference m) => m?.ThisPtr ?? IntPtr.Zero;
@@ -130,10 +103,11 @@ namespace ABI.System.ComponentModel
                 return null;
             }
 
+            using var args = ObjectReference<ABI.Microsoft.UI.Xaml.Data.IDataErrorsChangedEventArgsVftbl>.FromAbi(ptr);
             IntPtr propertyName = IntPtr.Zero;
             try
             {
-                ExceptionHelpers.ThrowExceptionForHR((**(ABI.Microsoft.UI.Xaml.Data.IDataErrorsChangedEventArgsVftbl**)ptr).get_PropertyName_0(ptr, &propertyName));
+                ExceptionHelpers.ThrowExceptionForHR(args.Vftbl.get_PropertyName_0(args.ThisPtr, &propertyName));
                 return new global::System.ComponentModel.DataErrorsChangedEventArgs(MarshalString.FromAbi(propertyName));
             }
             finally
@@ -144,7 +118,8 @@ namespace ABI.System.ComponentModel
 
         public static unsafe void CopyManaged(global::System.ComponentModel.DataErrorsChangedEventArgs o, IntPtr dest)
         {
-            *(IntPtr*)dest.ToPointer() = CreateMarshaler2(o).Detach();
+            using var objRef = CreateMarshaler(o);
+            *(IntPtr*)dest.ToPointer() = objRef?.GetRef() ?? IntPtr.Zero;
         }
 
         public static IntPtr FromManaged(global::System.ComponentModel.DataErrorsChangedEventArgs value)
@@ -153,7 +128,7 @@ namespace ABI.System.ComponentModel
             {
                 return IntPtr.Zero;
             }
-            return CreateMarshaler2(value).Detach();
+            return CreateMarshaler(value).GetRef();
         }
 
         public static void DisposeMarshaler(IObjectReference m) { m?.Dispose(); }

@@ -4,7 +4,7 @@
 
 namespace Windows.Foundation
 {
-    static class SR
+    class SR
     {
         public static string Argument_BufferLengthExceedsCapacity = "The specified useful data length exceeds the capacity of this buffer.";
 

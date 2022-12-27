@@ -1,18 +1,12 @@
-﻿// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Text;
 using WinRT.Interop;
 
 namespace WinRT
 {
-#if EMBED
-    internal
-#else 
-    public
-#endif
-    enum TrustLevel
+    public enum TrustLevel
     {
         BaseTrust = 0,
         PartialTrust = BaseTrust + 1,
@@ -22,13 +16,10 @@ namespace WinRT
     // IInspectable
     [ObjectReferenceWrapper(nameof(_obj))]
     [Guid("AF86E2E0-B12D-4c6a-9C5A-D7AA65101E90")]
-#if EMBED
-    internal
-#else
-    public
-#endif
-    partial class IInspectable
+    public partial class IInspectable
     {
+        internal static readonly Guid IID = new(0xAF86E2E0, 0xB12D, 0x4c6a, 0x9C, 0x5A, 0xD7, 0xAA, 0x65, 0x10, 0x1E, 0x90);
+
         [Guid("AF86E2E0-B12D-4c6a-9C5A-D7AA65101E90")]
         public unsafe struct Vftbl
         {
@@ -45,7 +36,7 @@ namespace WinRT
             public static readonly Vftbl AbiToProjectionVftable;
             public static readonly IntPtr AbiToProjectionVftablePtr;
 
-#if !NET
+#if NETSTANDARD2_0
             private static readonly Delegate[] DelegateCache = new Delegate[3];
             private delegate int _GetIidsDelegate(IntPtr pThis, int* iidCount, IntPtr* iids);
             private delegate int _GetRuntimeClassNameDelegate(IntPtr pThis, IntPtr* className);
@@ -57,7 +48,7 @@ namespace WinRT
                 AbiToProjectionVftable = new Vftbl
                 {
                     IUnknownVftbl = IUnknownVftbl.AbiToProjectionVftbl,
-#if !NET
+#if NETSTANDARD2_0
                     _GetIids = (void*)Marshal.GetFunctionPointerForDelegate(DelegateCache[0] = new _GetIidsDelegate(Do_Abi_GetIids)),
                     _GetRuntimeClassName = (void*)Marshal.GetFunctionPointerForDelegate(DelegateCache[1] = new _GetRuntimeClassNameDelegate(Do_Abi_GetRuntimeClassName)),
                     _GetTrustLevel = (void*)Marshal.GetFunctionPointerForDelegate(DelegateCache[2] = new _GetTrustLevelDelegate(Do_Abi_GetTrustLevel))
@@ -71,7 +62,7 @@ namespace WinRT
                 Marshal.StructureToPtr(AbiToProjectionVftable, AbiToProjectionVftablePtr, false);
             }
 
-#if NET
+#if !NETSTANDARD2_0
             [UnmanagedCallersOnly]
 #endif
             private static int Do_Abi_GetIids(IntPtr pThis, int* iidCount, IntPtr* iids)
@@ -89,7 +80,7 @@ namespace WinRT
                 return 0;
             }
 
-#if NET
+#if !NETSTANDARD2_0
             [UnmanagedCallersOnly]
 #endif
             private unsafe static int Do_Abi_GetRuntimeClassName(IntPtr pThis, IntPtr* className)
@@ -107,7 +98,7 @@ namespace WinRT
                 return 0;
             }
 
-#if NET
+#if !NETSTANDARD2_0
             [UnmanagedCallersOnly]
 #endif
             private static int Do_Abi_GetTrustLevel(IntPtr pThis, TrustLevel* trustLevel)

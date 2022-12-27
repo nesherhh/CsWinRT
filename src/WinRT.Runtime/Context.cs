@@ -1,7 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
 using WinRT.Interop;
 
@@ -19,7 +16,7 @@ namespace WinRT
 
         public static IntPtr GetContextCallback()
         {
-            Guid riid = ABI.WinRT.Interop.IContextCallback.IID;
+            Guid riid = typeof(IContextCallback).GUID;
             Marshal.ThrowExceptionForHR(CoGetObjectContext(ref riid, out IntPtr contextCallbackPtr));
             return contextCallbackPtr;
         }

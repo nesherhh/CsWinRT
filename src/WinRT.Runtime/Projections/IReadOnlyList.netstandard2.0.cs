@@ -1,14 +1,13 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using WinRT;
 using WinRT.Interop;
+using System.Diagnostics;
 
 #pragma warning disable 0169 // warning CS0169: The field '...' is never used
 #pragma warning disable 0649 // warning CS0169: Field '...' is never assigned to
@@ -31,18 +30,10 @@ namespace ABI.System.Collections.Generic
     using global::System.Runtime.CompilerServices;
 
     [Guid("BBE1FA4C-B0E3-4583-BAEF-1F1B2E483E56")]
-#if EMBED
-    internal
-#else
-    public
-#endif 
-    class IReadOnlyList<T> : global::System.Collections.Generic.IReadOnlyList<T>
+    public class IReadOnlyList<T> : global::System.Collections.Generic.IReadOnlyList<T>
     {
         public static IObjectReference CreateMarshaler(global::System.Collections.Generic.IReadOnlyList<T> obj) =>
-            obj is null ? null : ComWrappersSupport.CreateCCWForObject<Vftbl>(obj, GuidGenerator.GetIID(typeof(IReadOnlyList<T>)));
-
-        public static ObjectReferenceValue CreateMarshaler2(global::System.Collections.Generic.IReadOnlyList<T> obj) => 
-            ComWrappersSupport.CreateCCWForObjectForMarshaling(obj, GuidGenerator.GetIID(typeof(IReadOnlyList<T>)));
+            obj is null ? null : ComWrappersSupport.CreateCCWForObject(obj).As<Vftbl>(GuidGenerator.GetIID(typeof(IReadOnlyList<T>)));
 
         public static IntPtr GetAbi(IObjectReference objRef) =>
             objRef?.ThisPtr ?? IntPtr.Zero;
@@ -51,7 +42,7 @@ namespace ABI.System.Collections.Generic
             thisPtr == IntPtr.Zero ? null : new IReadOnlyList<T>(ObjRefFromAbi(thisPtr));
 
         public static IntPtr FromManaged(global::System.Collections.Generic.IReadOnlyList<T> value) =>
-            (value is null) ? IntPtr.Zero : CreateMarshaler2(value).Detach();
+            (value is null) ? IntPtr.Zero : CreateMarshaler(value).GetRef();
 
         public static void DisposeMarshaler(IObjectReference objRef) => objRef?.Dispose();
 
@@ -83,7 +74,7 @@ namespace ABI.System.Collections.Generic
                     uint size = _vectorView.Size;
                     if (((uint)int.MaxValue) < size)
                     {
-                        throw new InvalidOperationException(WinRTRuntimeErrorStrings.InvalidOperation_CollectionBackingListTooLarge);
+                        throw new InvalidOperationException(ErrorStrings.InvalidOperation_CollectionBackingListTooLarge);
                     }
 
                     return (int)size;
@@ -132,7 +123,7 @@ namespace ABI.System.Collections.Generic
                 // that Size > int.MaxValue:
                 if (((uint)int.MaxValue) <= index || index >= (uint)limit)
                 {
-                    Exception e = new ArgumentOutOfRangeException(nameof(index), WinRTRuntimeErrorStrings.ArgumentOutOfRange_IndexLargerThanMaxValue);
+                    Exception e = new ArgumentOutOfRangeException(nameof(index), ErrorStrings.ArgumentOutOfRange_IndexLargerThanMaxValue);
                     e.SetHResult(ExceptionHelpers.E_BOUNDS);
                     throw e;
                 }
@@ -394,7 +385,7 @@ namespace ABI.System.Collections.Generic
             var __params = new object[] { ThisPtr, null, null, null };
             try
             {
-                __value = Marshaler<T>.CreateMarshaler2(value);
+                __value = Marshaler<T>.CreateMarshaler(value);
                 __params[1] = Marshaler<T>.GetAbi(__value);
                 _obj.Vftbl.IndexOf_2.DynamicInvokeAbi(__params);
                 index = (uint)__params[2];
@@ -444,13 +435,7 @@ namespace ABI.System.Collections.Generic
 
         IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
-
-#if EMBED
-    internal
-#else
-    public
-#endif
-    static class IReadOnlyList_Delegates
+    public static class IReadOnlyList_Delegates
     {
         public unsafe delegate int GetMany_3(IntPtr thisPtr, uint startIndex, int __itemsSize, IntPtr items, out uint __return_value__);
     }

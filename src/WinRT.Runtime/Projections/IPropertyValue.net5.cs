@@ -1,11 +1,9 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using WinRT;
+using WinRT.Interop;
 
 namespace Windows.Foundation
 {
@@ -108,7 +106,6 @@ namespace ABI.Windows.Foundation
         private static IPropertyValue.Vftbl AbiToProjectionVftable;
         public static IntPtr AbiToProjectionVftablePtr;
 
-        internal static readonly Guid IID = new(0x4BD682DD, 0x7554, 0x40E9, 0x9A, 0x9B, 0x82, 0x65, 0x4E, 0xDE, 0x7E, 0x62);
 
         static unsafe ManagedIPropertyValueImpl()
         {
@@ -210,7 +207,7 @@ namespace ABI.Windows.Foundation
         }
 
 #pragma warning disable CS0649
-        private sealed class Boxed<T>
+        private class Boxed<T>
             where T : struct
         {
             public T Value;

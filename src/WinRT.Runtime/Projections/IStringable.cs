@@ -1,7 +1,6 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
 using System;
+using System.Collections.Generic;
+using System.Text;
 using System.Runtime.InteropServices;
 using WinRT;
 
@@ -19,9 +18,7 @@ namespace ABI.Windows.Foundation
         private static readonly ManagedIStringableVftbl AbiToProjectionVftable;
         public static readonly IntPtr AbiToProjectionVftablePtr;
 
-        internal static readonly Guid IID = new(0x96369F54, 0x8EB6, 0x48F0, 0xAB, 0xCE, 0xC1, 0xB2, 0x11, 0xE6, 0x27, 0xC3);
-
-#if !NET
+#if NETSTANDARD2_0
         private unsafe delegate int ToStringDelegate(IntPtr thisPtr, IntPtr* value);
         private static readonly ToStringDelegate delegateCache;
 #endif
@@ -30,7 +27,7 @@ namespace ABI.Windows.Foundation
             AbiToProjectionVftable = new ManagedIStringableVftbl
             {
                 IInspectableVftbl = global::WinRT.IInspectable.Vftbl.AbiToProjectionVftable,
-#if !NET
+#if NETSTANDARD2_0
                 _ToString_0 = Marshal.GetFunctionPointerForDelegate(delegateCache = Do_Abi_ToString_0).ToPointer()
 #else
                 _ToString_0 = (delegate* unmanaged<IntPtr, IntPtr*, int>)&Do_Abi_ToString_0
@@ -41,7 +38,7 @@ namespace ABI.Windows.Foundation
             AbiToProjectionVftablePtr = (IntPtr)nativeVftbl;
         }
 
-#if NET
+#if !NETSTANDARD2_0
         [UnmanagedCallersOnly]
 #endif
         private static unsafe int Do_Abi_ToString_0(IntPtr thisPtr, IntPtr* value)

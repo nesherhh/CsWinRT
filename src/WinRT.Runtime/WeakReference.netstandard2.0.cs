@@ -1,6 +1,6 @@
-﻿// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 using WinRT.Interop;
 
 namespace WinRT
@@ -10,12 +10,7 @@ namespace WinRT
     /// The lifetime of the weak reference is the lifetime of the native object instead of the C#/WinRT wrapper.
     /// </summary>
     /// <typeparam name="T">The type of object the weak reference points to.</typeparam>
-#if EMBED
-    internal
-#else
-    public
-#endif
-    sealed class WeakReference<T>
+    public sealed class WeakReference<T>
         where T : class
     {
         private System.WeakReference<T> _managedWeakReference;
@@ -64,7 +59,7 @@ namespace WinRT
             {
                 return null;
             }
-            using var resolved = reference.Resolve(IUnknownVftbl.IID);
+            using var resolved = reference.Resolve(typeof(IUnknownVftbl).GUID);
             return ComWrappersSupport.CreateRcwForComObject<object>(resolved.ThisPtr);
         }
     }

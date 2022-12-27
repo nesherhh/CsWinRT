@@ -1,7 +1,7 @@
-﻿// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Text;
 
 namespace WinRT
 {
@@ -10,12 +10,7 @@ namespace WinRT
     /// as a base class of another composable object.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
-#if EMBED
-    internal
-#else
-    public
-#endif 
-    class DerivedComposed
+    public class DerivedComposed
     {
         public static readonly DerivedComposed Instance = new DerivedComposed();
 

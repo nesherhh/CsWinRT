@@ -15,15 +15,10 @@ namespace System.IO
     /// <summary>
     /// Contains extension methods that provide convenience helpers for WinRT IO.
     /// </summary>
-#if EMBED 
-    internal 
-#else 
-    public 
-#endif 
-    static class WindowsRuntimeStorageExtensions
+    public static class WindowsRuntimeStorageExtensions
     {
         // Net5-specific extension methods
-#if NET
+#if !NETSTANDARD2_0
         [global::System.Runtime.Versioning.SupportedOSPlatform("windows10.0.10240.0")]
         public static Task<Stream> OpenStreamForReadAsync(this IStorageFile windowsRuntimeFile)
         {

@@ -1,16 +1,10 @@
-﻿// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
-using System;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace WinRT
 {
-#if EMBED
-    internal
-#else 
-    public
-#endif
-    struct EventRegistrationToken : IEquatable<EventRegistrationToken>
+    public struct EventRegistrationToken : IEquatable<EventRegistrationToken>
     {
         public long Value;
 

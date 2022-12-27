@@ -1,18 +1,12 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace ABI.System
 {
     [StructLayout(LayoutKind.Sequential)]
-#if EMBED
-    internal
-#else
-    public
-#endif
-    struct TimeSpan
+    public struct TimeSpan
     {
         // NOTE: both 'Windows.Foundation.TimeSpan.Duration' and 'System.TimeSpan.Ticks' are in units of 100ns
         public long Duration;
@@ -55,12 +49,7 @@ namespace ABI.System
     }
 
     [StructLayout(LayoutKind.Sequential)]
-#if EMBED
-    internal
-#else
-    public
-#endif
-    struct DateTimeOffset
+    public struct DateTimeOffset
     {
         // NOTE: 'Windows.Foundation.DateTime.UniversalTime' is a FILETIME value (relative to 01/01/1601), however
         // 'System.DateTimeOffset.Ticks' is relative to 01/01/0001
@@ -116,12 +105,7 @@ namespace ABI.System
     }
 
     [StructLayout(LayoutKind.Sequential)]
-#if EMBED
-    internal
-#else
-    public
-#endif
-    struct Exception
+    public struct Exception
     {
         public int hr;
 

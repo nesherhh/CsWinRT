@@ -1,10 +1,4 @@
-﻿#if UAC_VERSION_15
-#define UAC_VERSION_14
-#endif
-#if UAC_VERSION_14
-#define UAC_VERSION_13
-#endif
-#if UAC_VERSION_13
+﻿#if UAC_VERSION_13
 #define UAC_VERSION_12
 #endif
 #if UAC_VERSION_12
@@ -61,12 +55,7 @@ namespace WinRT.Interop
         IntPtr WindowHandle { get; }
     }
 
-#if EMBED 
-    internal 
-#else 
-    public 
-#endif
-    static class WindowNative
+    public static class WindowNative
     {
         public static IntPtr GetWindowHandle(object target) => target.As<IWindowNative>().WindowHandle;
     }
@@ -79,12 +68,7 @@ namespace WinRT.Interop
         void Initialize(IntPtr hwnd);
     }
 
-#if EMBED
-    internal 
-#else
-    public
-#endif
-    static class InitializeWithWindow
+    public static class InitializeWithWindow
     {
         public static void Initialize(object target, IntPtr hwnd) => target.As<IInitializeWithWindow>().Initialize(hwnd);
     }
@@ -93,15 +77,10 @@ namespace WinRT.Interop
 namespace Windows.ApplicationModel.DataTransfer.DragDrop.Core
 {
 #if UAC_VERSION_1
-#if NET
+#if !NETSTANDARD2_0
     [global::System.Runtime.Versioning.SupportedOSPlatform("Windows10.0.10240.0")]
 #endif
-#if EMBED
-    internal
-#else
-    public 
-#endif
-    static class DragDropManagerInterop
+    public static class DragDropManagerInterop
     {
         private static IDragDropManagerInterop dragDropManagerInterop = CoreDragDropManager.As<IDragDropManagerInterop>();
         
@@ -117,15 +96,10 @@ namespace Windows.ApplicationModel.DataTransfer.DragDrop.Core
 namespace Windows.Graphics.Printing
 {
 #if UAC_VERSION_1
-#if NET
+#if !NETSTANDARD2_0
     [global::System.Runtime.Versioning.SupportedOSPlatform("Windows10.0.10240.0")]
 #endif
-#if EMBED
-    internal
-#else
-    public 
-#endif
-    static class PrintManagerInterop
+    public static class PrintManagerInterop
     {
         private static IPrintManagerInterop printManagerInterop = PrintManager.As<IPrintManagerInterop>();
 
@@ -147,15 +121,10 @@ namespace Windows.Graphics.Printing
 namespace Windows.Media
 {
 #if UAC_VERSION_1
-#if NET
+#if !NETSTANDARD2_0
     [global::System.Runtime.Versioning.SupportedOSPlatform("Windows10.0.10240.0")]
 #endif
-#if EMBED
-    internal
-#else
-    public 
-#endif
-    static class SystemMediaTransportControlsInterop
+    public static class SystemMediaTransportControlsInterop
     {
         private static ISystemMediaTransportControlsInterop systemMediaTransportControlsInterop = SystemMediaTransportControls.As<ISystemMediaTransportControlsInterop>();
 
@@ -171,15 +140,10 @@ namespace Windows.Media
 namespace Windows.Media.PlayTo
 {
 #if UAC_VERSION_1
-#if NET
+#if !NETSTANDARD2_0
     [global::System.Runtime.Versioning.SupportedOSPlatform("Windows10.0.10240.0")]
 #endif
-#if EMBED
-    internal
-#else
-    public 
-#endif 
-    static class PlayToManagerInterop
+    public static class PlayToManagerInterop
     {
         private static IPlayToManagerInterop playToManagerInterop = PlayToManager.As<IPlayToManagerInterop>();
         
@@ -200,15 +164,10 @@ namespace Windows.Media.PlayTo
 namespace Windows.Security.Credentials.UI
 {
 #if UAC_VERSION_1
-#if NET
+#if !NETSTANDARD2_0
     [global::System.Runtime.Versioning.SupportedOSPlatform("Windows10.0.10240.0")]
 #endif
-#if EMBED
-    internal
-#else
-    public 
-#endif
-    static class UserConsentVerifierInterop
+    public static class UserConsentVerifierInterop
     {
         private static IUserConsentVerifierInterop userConsentVerifierInterop = UserConsentVerifier.As<IUserConsentVerifierInterop>();
 
@@ -224,15 +183,10 @@ namespace Windows.Security.Credentials.UI
 namespace Windows.Security.Authentication.Web.Core
 {
 #if UAC_VERSION_1
-#if NET
+#if !NETSTANDARD2_0
     [global::System.Runtime.Versioning.SupportedOSPlatform("Windows10.0.10240.0")]
 #endif
-#if EMBED
-    internal
-#else
-    public 
-#endif
-    static class WebAuthenticationCoreManagerInterop
+    public static class WebAuthenticationCoreManagerInterop
     {
         private static IWebAuthenticationCoreManagerInterop webAuthenticationCoreManagerInterop = WebAuthenticationCoreManager.As<IWebAuthenticationCoreManagerInterop>();
 
@@ -254,15 +208,10 @@ namespace Windows.Security.Authentication.Web.Core
 namespace Windows.UI.ApplicationSettings
 {
 #if UAC_VERSION_1
-#if NET
+#if !NETSTANDARD2_0
     [global::System.Runtime.Versioning.SupportedOSPlatform("Windows10.0.10240.0")]
 #endif
-#if EMBED
-    internal
-#else
-    public 
-#endif
-    static class AccountsSettingsPaneInterop
+    public static class AccountsSettingsPaneInterop
     {
         private static IAccountsSettingsPaneInterop accountsSettingsPaneInterop = AccountsSettingsPane.As<IAccountsSettingsPaneInterop>();
 
@@ -290,15 +239,10 @@ namespace Windows.UI.ApplicationSettings
 namespace Windows.UI.Input
 {
 #if UAC_VERSION_3
-#if NET
+#if !NETSTANDARD2_0
     [global::System.Runtime.Versioning.SupportedOSPlatform("Windows10.0.14393.0")]
 #endif
-#if EMBED
-    internal
-#else
-    public 
-#endif
-    static class RadialControllerConfigurationInterop
+    public static class RadialControllerConfigurationInterop
     {
         private static IRadialControllerConfigurationInterop radialControllerConfigurationInterop 
             = RadialControllerConfiguration.As<IRadialControllerConfigurationInterop>();
@@ -310,15 +254,10 @@ namespace Windows.UI.Input
         }
     }
 
-#if NET
+#if !NETSTANDARD2_0
     [global::System.Runtime.Versioning.SupportedOSPlatform("Windows10.0.14393.0")]
 #endif
-#if EMBED
-    internal
-#else
-    public 
-#endif
-    static class RadialControllerInterop
+    public static class RadialControllerInterop
     {
         private static IRadialControllerInterop radialControllerInterop = RadialController.As<IRadialControllerInterop>();
 
@@ -334,15 +273,10 @@ namespace Windows.UI.Input
 namespace Windows.UI.Input.Core
 {
 #if UAC_VERSION_4
-#if NET
+#if !NETSTANDARD2_0
     [global::System.Runtime.Versioning.SupportedOSPlatform("Windows10.0.15063.0")]
 #endif
-#if EMBED
-    internal
-#else
-    public 
-#endif
-    static class RadialControllerIndependentInputSourceInterop
+    public static class RadialControllerIndependentInputSourceInterop
     {
         private static IRadialControllerIndependentInputSourceInterop radialControllerIndependentInputSourceInterop 
             = RadialControllerIndependentInputSource.As<IRadialControllerIndependentInputSourceInterop>();
@@ -359,15 +293,10 @@ namespace Windows.UI.Input.Core
 namespace Windows.UI.Input.Spatial
 {
 #if UAC_VERSION_2
-#if NET
+#if !NETSTANDARD2_0
     [global::System.Runtime.Versioning.SupportedOSPlatform("Windows10.0.10586.0")]
 #endif
-#if EMBED
-    internal
-#else
-    public 
-#endif
-    static class SpatialInteractionManagerInterop
+    public static class SpatialInteractionManagerInterop
     {
         private static ISpatialInteractionManagerInterop spatialInteractionManagerInterop = SpatialInteractionManager.As<ISpatialInteractionManagerInterop>();
         
@@ -383,15 +312,10 @@ namespace Windows.UI.Input.Spatial
 namespace Windows.UI.ViewManagement
 {
 #if UAC_VERSION_1
-#if NET
+#if !NETSTANDARD2_0
     [global::System.Runtime.Versioning.SupportedOSPlatform("Windows10.0.10240.0")]
 #endif
-#if EMBED
-    internal
-#else
-    public 
-#endif
-    static class InputPaneInterop
+    public static class InputPaneInterop
     {
         private static IInputPaneInterop inputPaneInterop = InputPane.As<IInputPaneInterop>();
 
@@ -402,15 +326,10 @@ namespace Windows.UI.ViewManagement
         }
     }
 
-#if NET
+#if !NETSTANDARD2_0
     [global::System.Runtime.Versioning.SupportedOSPlatform("Windows10.0.10240.0")]
 #endif
-#if EMBED
-    internal
-#else
-    public 
-#endif
-    static class UIViewSettingsInterop
+    public static class UIViewSettingsInterop
     {
         private static IUIViewSettingsInterop uIViewSettingsInterop = UIViewSettings.As<IUIViewSettingsInterop>();
 
@@ -418,36 +337,6 @@ namespace Windows.UI.ViewManagement
         {
             var iid = GuidGenerator.CreateIID(typeof(IUIViewSettings));
             return (UIViewSettings)uIViewSettingsInterop.GetForWindow(hwnd, iid);
-        }
-    }
-#endif
-}
-
-namespace Windows.Graphics.Display
-{
-#if UAC_VERSION_15
-#if NET
-    [global::System.Runtime.Versioning.SupportedOSPlatform("Windows10.0.22621.0")]
-#endif
-#if EMBED
-    internal
-#else
-    public
-#endif
-    static class DisplayInformationInterop
-    {
-        private static IDisplayInformationStaticsInterop displayInformationInterop = DisplayInformation.As<IDisplayInformationStaticsInterop>();
-
-        public static DisplayInformation GetForWindow(IntPtr window)
-        {
-            Guid iid = GuidGenerator.CreateIID(typeof(IDisplayInformation));
-            return (DisplayInformation)displayInformationInterop.GetForWindow(window, iid);
-        }
-
-        public static DisplayInformation GetForMonitor(IntPtr monitor)
-        {
-            Guid iid = GuidGenerator.CreateIID(typeof(IDisplayInformation));
-            return (DisplayInformation)displayInformationInterop.GetForMonitor(monitor, iid);
         }
     }
 #endif

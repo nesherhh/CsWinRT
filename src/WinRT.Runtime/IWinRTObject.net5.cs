@@ -1,6 +1,3 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -9,12 +6,7 @@ using WinRT.Interop;
 
 namespace WinRT
 {
-#if EMBED
-    internal
-#else
-    public
-#endif
-    interface IWinRTObject : IDynamicInterfaceCastable
+    public interface IWinRTObject : IDynamicInterfaceCastable
     {
         bool IDynamicInterfaceCastable.IsInterfaceImplemented(RuntimeTypeHandle interfaceType, bool throwIfNotImplemented)
         {

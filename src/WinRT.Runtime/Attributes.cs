@@ -1,19 +1,13 @@
-﻿// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Text;
 
 namespace WinRT
 {
     [EditorBrowsable(EditorBrowsableState.Never)]
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-#if EMBED
-    internal
-#else
-    public        
-#endif
-    sealed class ProjectedRuntimeClassAttribute : Attribute
+    public sealed class ProjectedRuntimeClassAttribute : Attribute
     {
         public ProjectedRuntimeClassAttribute(string defaultInterfaceProp)
         {
@@ -31,12 +25,7 @@ namespace WinRT
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-#if EMBED
-    internal
-#else
-    public        
-#endif
-    sealed class ObjectReferenceWrapperAttribute : Attribute
+    public sealed class ObjectReferenceWrapperAttribute : Attribute
     {
         public ObjectReferenceWrapperAttribute(string objectReferenceField)
         {
@@ -51,12 +40,7 @@ namespace WinRT
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface | AttributeTargets.Delegate | AttributeTargets.Struct | AttributeTargets.Enum, Inherited = false, AllowMultiple = false)]
-#if EMBED
-    internal
-#else
-    public        
-#endif 
-    sealed class WindowsRuntimeTypeAttribute : Attribute
+    public sealed class WindowsRuntimeTypeAttribute : Attribute
     {
         public WindowsRuntimeTypeAttribute(string sourceMetadata = null)
         {

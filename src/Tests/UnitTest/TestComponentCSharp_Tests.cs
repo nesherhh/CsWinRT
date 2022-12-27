@@ -29,7 +29,6 @@ using Windows.Security.Cryptography;
 using Windows.Security.Cryptography.Core;
 using System.Reflection;
 using Windows.Devices.Enumeration.Pnp;
-using System.Diagnostics;
 
 #if NET
 using WeakRefNS = System;
@@ -852,9 +851,6 @@ namespace UnitTest
             {
                 Assert.Equal(stringMap[item.Key], item.Value);
             }
-            KeyValuePair<string, string>[] pairs = new KeyValuePair<string, string>[2];
-            stringMap.CopyTo(pairs, 0);
-            Assert.Equal(2, pairs.Length);
         }
 
         [Fact]
@@ -877,28 +873,6 @@ namespace UnitTest
         public void TestValueSet()
         {
             var map = new Dictionary<string, string> { ["foo"] = "bar", ["hello"] = "world" };
-            var valueSet = new Windows.Foundation.Collections.ValueSet();
-            foreach (var item in map)
-            {
-                valueSet[item.Key] = item.Value;
-            }
-            Assert.Equal(map.Count, valueSet.Count);
-            foreach (var item in map)
-            {
-                Assert.Equal(valueSet[item.Key], item.Value);
-            }
-        }
-
-        [Fact]
-        public void TestValueSetArrays()
-        {
-            var map = new Dictionary<string, long[]>
-            { 
-                ["foo"] = new long[] { 1, 2, 3 },
-                ["hello"] = new long[0], 
-                ["world"] = new long[] { 1, 2, 3 }, 
-                ["bar"] = new long[0]
-            };
             var valueSet = new Windows.Foundation.Collections.ValueSet();
             foreach (var item in map)
             {
@@ -1484,7 +1458,7 @@ namespace UnitTest
             Assert.NotNull(marshalCCW2);
         }
 
-#if NET
+#if !NETCOREAPP2_0
         [Fact]
         public void TestDelegateCCWMarshaler()
         {
@@ -2176,12 +2150,6 @@ namespace UnitTest
 
             string s = "Hello World!";
             Assert.Equal(s, Class.UnboxString(s));
-
-            ProvideInt intHandler = () => 42;
-            Assert.Equal(intHandler, Class.UnboxDelegate(intHandler));
-
-            EnumValue enumValue = EnumValue.Two;
-            Assert.Equal(enumValue, Class.UnboxEnum(enumValue));
         }
 
         [Fact]
@@ -2251,23 +2219,6 @@ namespace UnitTest
             Assert.IsType<string>(str2);
             Assert.Equal(string.Empty, (string)str1);
             Assert.Equal(string.Empty, (string)str2);
-        }
-
-        [Fact]
-        public void TestDelegateUnboxing()
-        {
-            var del = Class.BoxedDelegate;
-            Assert.IsType<ProvideUri>(del);
-            var provideUriDel = (ProvideUri) del;
-            Assert.Equal(new Uri("http://microsoft.com"), provideUriDel());
-        }
-
-        [Fact]
-        public void TestEnumUnboxing()
-        {
-            var enumVal = Class.BoxedEnum;
-            Assert.IsType<EnumValue>(enumVal);
-            Assert.Equal(EnumValue.Two, enumVal);
         }
 
         internal class ManagedType { }
@@ -2384,9 +2335,8 @@ namespace UnitTest
 
             public void CallProxyObject()
             {
-                // Call to a proxy object which we internally use an agile reference
-                // to resolve after the apartment is gone should throw.
-                Assert.ThrowsAny<System.Exception>(() => proxyObject.Commands);
+                // Call to the proxy object after the apartment is gone should throw.
+                Assert.ThrowsAny<System.Exception>(() => proxyObject2.Commands);
             }
 
             private Windows.UI.Popups.PopupMenu nonAgileObject, nonAgileObject2;
@@ -2712,42 +2662,6 @@ namespace UnitTest
             Assert.True(eventCalled2);
         }
 
-#if NET
-        [Fact]
-        public void TestProxiedDelegate()
-        {
-            var obj = new OOPAsyncAction();
-            var factory = new WinRTClassFactory<OOPAsyncAction>(
-                () => obj,
-                new Dictionary<Guid, Func<object, IntPtr>>()
-                {
-                    { typeof(IAsyncAction).GUID, obj => MarshalInterface<IAsyncAction>.FromManaged((IAsyncAction) obj) },
-                });
-
-            WinRTClassFactory<OOPAsyncAction>.RegisterClass<OOPAsyncAction>(factory);
-
-            var currentExecutingDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-#if NET
-            var launchExePath = $"{currentExecutingDir}\\OOPExe.exe";
-            var proc = Process.Start(launchExePath);
-#else
-            var launchExePath = $"{currentExecutingDir}\\OOPExe.dll";
-            var proc = Process.Start("dotnet.exe", launchExePath);
-#endif
-            Thread.Sleep(1000);
-            obj.Close();
-            Assert.True(obj.delegateCalled);
-
-            try
-            {
-                proc.Kill();
-            }
-            catch(Exception)
-            {
-            }
-        }
-#endif
-
         [Fact]
         private async Task TestPnpPropertiesInLoop()
         {
@@ -2848,62 +2762,5 @@ namespace UnitTest
             WarningStatic.WarningEvent += (object s, Int32 v) => { }; // warning CA1416
         }
 #endif
-
-        [Fact]
-        public void TestObjectFunctions()
-        {
-            CustomEquals first = new()
-            {
-                Value = 2
-            };
-            CustomEquals second = new()
-            {
-                Value = 4
-            };
-            CustomEquals third = new()
-            {
-                Value = 2
-            };
-
-            Assert.False(first.Equals(second));
-            Assert.True(first.Equals(third));
-            Assert.True(first.Equals(first));
-            Assert.True(Object.Equals(first, second));
-            Assert.True(Object.Equals(second, third));
-            Assert.Equal(5, first.GetHashCode());
-            Assert.Equal(5, second.GetHashCode());
-
-            Class fourth = new();
-            Class fifth = new();
-            Assert.True(fourth.Equals(fourth));
-            Assert.False(fourth.Equals(fifth));
-            Assert.False(Object.Equals(fourth, fifth));
-            Assert.True(Object.Equals(fifth, fifth));
-            fourth.GetHashCode();
-
-            CustomEquals2 sixth = new()
-            {
-                Value = 4
-            };
-            Assert.Equal(4, sixth.Equals(sixth));
-            Assert.Equal(4, sixth.Equals(fifth));
-            Assert.False(object.Equals(sixth, fifth));
-            Assert.True(object.Equals(sixth, sixth));
-            Assert.False(((IEquatable<CustomEquals2>)sixth).Equals(new CustomEquals2()));
-            Assert.True(((IEquatable<CustomEquals2>)sixth).Equals(sixth));
-
-            UnSealedCustomEquals seventh = new()
-            {
-                Value = 2
-            };
-            DerivedCustomEquals eighth = new()
-            {
-                Value = 2
-            };
-            Assert.Equal(10, eighth.GetHashCode());
-            // Uses Equals defined on derived.
-            Assert.True(eighth.Equals(seventh));
-            Assert.False(seventh.Equals(eighth));
-        }
     }
 }

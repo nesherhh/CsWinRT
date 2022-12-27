@@ -1,18 +1,14 @@
-﻿// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Text;
 using WinRT.Interop;
 
 namespace WinRT
 {
-#if EMBED
-    internal 
-#else
-    public
-#endif 
-    static class CastExtensions
+    public static class CastExtensions
     {
         /// <summary>
         /// Cast a WinRT object to an interface type it implements in its implementation
@@ -68,16 +64,12 @@ namespace WinRT
                 return new AgileReference<T>(null);
             }
 
-            var marshal = Marshaler<T>.CreateMarshaler2(value);
+            var marshal = Marshaler<T>.CreateMarshaler(value);
             try
             {
                 if (marshal is IObjectReference objref)
                 {
                     return new AgileReference<T>(objref);
-                }
-                else if (marshal is ObjectReferenceValue objrefValue)
-                {
-                    return new AgileReference<T>(objrefValue);
                 }
             }
             finally
@@ -111,7 +103,7 @@ namespace WinRT
 
         private static bool TryGetComposedRefForQI(object value, out IObjectReference objRef)
         {
-#if !NET
+#if NETSTANDARD2_0
             var getReferenceMethod = value.GetType().GetMethod("GetDefaultReference", BindingFlags.NonPublic | BindingFlags.Instance).MakeGenericMethod(typeof(IUnknownVftbl));
             if (getReferenceMethod is null)
             {

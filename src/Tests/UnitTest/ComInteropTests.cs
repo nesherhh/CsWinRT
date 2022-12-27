@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using Windows.ApplicationModel.DataTransfer.DragDrop.Core;
-using Windows.Graphics.Display;
 using Windows.Graphics.Printing;
 using Windows.Media;
 using Windows.Media.PlayTo;
@@ -152,14 +151,6 @@ namespace UnitTest
             Assert.Throws<ArgumentException>(() => WebAuthenticationCoreManagerInterop.RequestTokenForWindowAsync(new IntPtr(0), webTokenRequest));
             var webAccount = new WebAccount(provider, "user name", 0);
             Assert.Throws<ArgumentException>(() => WebAuthenticationCoreManagerInterop.RequestTokenWithWebAccountForWindowAsync(new IntPtr(0), webTokenRequest, webAccount));
-        }
-
-        // Skipping as API isn't available in pipeline yet.
-        [Fact(Skip = "Compile-time only interop test")]
-        public void TestDisplayInformation()
-        {
-            Assert.Throws<COMException>(() => DisplayInformationInterop.GetForWindow(new IntPtr(0)));
-            Assert.Throws<COMException>(() => DisplayInformationInterop.GetForMonitor(new IntPtr(0)));
         }
     }
 }

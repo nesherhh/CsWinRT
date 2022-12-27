@@ -1,18 +1,12 @@
-﻿// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace WinRT.Interop
 {
     [Guid("00000000-0000-0000-C000-000000000046")]
-#if EMBED
-    internal
-#else
-    public
-#endif
-    unsafe struct IUnknownVftbl
+    public unsafe struct IUnknownVftbl
     {
         private void* _QueryInterface;
         public delegate* unmanaged[Stdcall]<IntPtr, ref Guid, out IntPtr, int> QueryInterface { get => (delegate* unmanaged[Stdcall]<IntPtr, ref Guid, out IntPtr, int>)_QueryInterface; set => _QueryInterface = (void*)value; }
@@ -24,17 +18,6 @@ namespace WinRT.Interop
         public static IUnknownVftbl AbiToProjectionVftbl => ComWrappersSupport.IUnknownVftbl;
         public static IntPtr AbiToProjectionVftblPtr => ComWrappersSupport.IUnknownVftblPtr;
 
-        internal static readonly Guid IID = InterfaceIIDs.IUnknown_IID;
-
-        // Avoids boxing when using default Equals.
-        internal bool Equals(IUnknownVftbl other)
-        {
-            return _QueryInterface == other._QueryInterface && _AddRef == other._AddRef && _Release == other._Release;
-        }
-
-        internal unsafe static bool IsReferenceToManagedObject(IntPtr ptr)
-        {
-            return (**(IUnknownVftbl**)ptr).Equals(AbiToProjectionVftbl);
-        }
+        internal static readonly Guid IID = new(0, 0, 0, 0xC0, 0, 0, 0, 0, 0, 0, 0x46);
     }
 }

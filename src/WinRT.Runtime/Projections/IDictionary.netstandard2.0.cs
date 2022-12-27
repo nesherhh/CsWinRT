@@ -1,16 +1,13 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using WinRT;
 using WinRT.Interop;
+using System.Diagnostics;
 
 #pragma warning disable 0169 // warning CS0169: The field '...' is never used
 #pragma warning disable 0649 // warning CS0169: Field '...' is never assigned to
@@ -36,18 +33,10 @@ namespace ABI.System.Collections.Generic
     using global::System.Runtime.CompilerServices;
 
     [Guid("3C2925FE-8519-45C1-AA79-197B6718C1C1")]
-#if EMBED
-    internal
-#else
-    public
-#endif
-    class IDictionary<K, V> : global::System.Collections.Generic.IDictionary<K, V>
+    public class IDictionary<K, V> : global::System.Collections.Generic.IDictionary<K, V>
     {
         public static IObjectReference CreateMarshaler(global::System.Collections.Generic.IDictionary<K, V> obj) =>
-            obj is null ? null : ComWrappersSupport.CreateCCWForObject<Vftbl>(obj, GuidGenerator.GetIID(typeof(IDictionary<K, V>)));
-
-        public static ObjectReferenceValue CreateMarshaler2(global::System.Collections.Generic.IDictionary<K, V> obj) => 
-            ComWrappersSupport.CreateCCWForObjectForMarshaling(obj, GuidGenerator.GetIID(typeof(IDictionary<K, V>)));
+            obj is null ? null : ComWrappersSupport.CreateCCWForObject(obj).As<Vftbl>(GuidGenerator.GetIID(typeof(IDictionary<K, V>)));
 
         public static IntPtr GetAbi(IObjectReference objRef) =>
             objRef?.ThisPtr ?? IntPtr.Zero;
@@ -56,7 +45,7 @@ namespace ABI.System.Collections.Generic
             thisPtr == IntPtr.Zero ? null : new IDictionary<K, V>(ObjRefFromAbi(thisPtr));
 
         public static IntPtr FromManaged(global::System.Collections.Generic.IDictionary<K, V> value) =>
-            (value is null) ? IntPtr.Zero : CreateMarshaler2(value).Detach();
+            (value is null) ? IntPtr.Zero : CreateMarshaler(value).GetRef();
 
         public static void DisposeMarshaler(IObjectReference objRef) => objRef?.Dispose();
 
@@ -89,7 +78,7 @@ namespace ABI.System.Collections.Generic
 
                     if (((uint)int.MaxValue) < size)
                     {
-                        throw new InvalidOperationException(WinRTRuntimeErrorStrings.InvalidOperation_CollectionBackingDictionaryTooLarge);
+                        throw new InvalidOperationException(ErrorStrings.InvalidOperation_CollectionBackingDictionaryTooLarge);
                     }
 
                     return (int)size;
@@ -127,10 +116,10 @@ namespace ABI.System.Collections.Generic
                     throw new ArgumentOutOfRangeException(nameof(arrayIndex));
 
                 if (array.Length <= arrayIndex && Count > 0)
-                    throw new ArgumentException(WinRTRuntimeErrorStrings.Argument_IndexOutOfArrayBounds);
+                    throw new ArgumentException(ErrorStrings.Argument_IndexOutOfArrayBounds);
 
                 if (array.Length - arrayIndex < Count)
-                    throw new ArgumentException(WinRTRuntimeErrorStrings.Argument_InsufficientSpaceToCopyCollection);
+                    throw new ArgumentException(ErrorStrings.Argument_InsufficientSpaceToCopyCollection);
 
                 foreach (global::System.Collections.Generic.KeyValuePair<K, V> mapping in this)
                 {
@@ -176,7 +165,7 @@ namespace ABI.System.Collections.Generic
                     throw new ArgumentNullException(nameof(key));
 
                 if (ContainsKey(key))
-                    throw new ArgumentException(WinRTRuntimeErrorStrings.Argument_AddingDuplicate);
+                    throw new ArgumentException(ErrorStrings.Argument_AddingDuplicate);
 
                 Insert(_map, key, value);
             }
@@ -237,7 +226,7 @@ namespace ABI.System.Collections.Generic
                 catch (Exception ex)
                 {
                     if (ExceptionHelpers.E_BOUNDS == ex.HResult)
-                        throw new KeyNotFoundException(WinRTRuntimeErrorStrings.Arg_KeyNotFound);
+                        throw new KeyNotFoundException(ErrorStrings.Arg_KeyNotFound);
                     throw;
                 }
             }
@@ -273,9 +262,9 @@ namespace ABI.System.Collections.Generic
                     if (index < 0)
                         throw new ArgumentOutOfRangeException(nameof(index));
                     if (array.Length <= index && this.Count > 0)
-                        throw new ArgumentException(WinRTRuntimeErrorStrings.Arg_IndexOutOfRangeException);
+                        throw new ArgumentException(ErrorStrings.Arg_IndexOutOfRangeException);
                     if (array.Length - index < dictionary.Count)
-                        throw new ArgumentException(WinRTRuntimeErrorStrings.Argument_InsufficientSpaceToCopyCollection);
+                        throw new ArgumentException(ErrorStrings.Argument_InsufficientSpaceToCopyCollection);
 
                     int i = index;
                     foreach (global::System.Collections.Generic.KeyValuePair<K, V> mapping in dictionary)
@@ -290,12 +279,12 @@ namespace ABI.System.Collections.Generic
 
                 void ICollection<K>.Add(K item)
                 {
-                    throw new NotSupportedException(WinRTRuntimeErrorStrings.NotSupported_KeyCollectionSet);
+                    throw new NotSupportedException(ErrorStrings.NotSupported_KeyCollectionSet);
                 }
 
                 void ICollection<K>.Clear()
                 {
-                    throw new NotSupportedException(WinRTRuntimeErrorStrings.NotSupported_KeyCollectionSet);
+                    throw new NotSupportedException(ErrorStrings.NotSupported_KeyCollectionSet);
                 }
 
                 public bool Contains(K item)
@@ -305,7 +294,7 @@ namespace ABI.System.Collections.Generic
 
                 bool ICollection<K>.Remove(K item)
                 {
-                    throw new NotSupportedException(WinRTRuntimeErrorStrings.NotSupported_KeyCollectionSet);
+                    throw new NotSupportedException(ErrorStrings.NotSupported_KeyCollectionSet);
                 }
 
                 global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
@@ -367,9 +356,9 @@ namespace ABI.System.Collections.Generic
                     if (index < 0)
                         throw new ArgumentOutOfRangeException(nameof(index));
                     if (array.Length <= index && this.Count > 0)
-                        throw new ArgumentException(WinRTRuntimeErrorStrings.Arg_IndexOutOfRangeException);
+                        throw new ArgumentException(ErrorStrings.Arg_IndexOutOfRangeException);
                     if (array.Length - index < dictionary.Count)
-                        throw new ArgumentException(WinRTRuntimeErrorStrings.Argument_InsufficientSpaceToCopyCollection);
+                        throw new ArgumentException(ErrorStrings.Argument_InsufficientSpaceToCopyCollection);
 
                     int i = index;
                     foreach (global::System.Collections.Generic.KeyValuePair<K, V> mapping in dictionary)
@@ -384,12 +373,12 @@ namespace ABI.System.Collections.Generic
 
                 void ICollection<V>.Add(V item)
                 {
-                    throw new NotSupportedException(WinRTRuntimeErrorStrings.NotSupported_ValueCollectionSet);
+                    throw new NotSupportedException(ErrorStrings.NotSupported_ValueCollectionSet);
                 }
 
                 void ICollection<V>.Clear()
                 {
-                    throw new NotSupportedException(WinRTRuntimeErrorStrings.NotSupported_ValueCollectionSet);
+                    throw new NotSupportedException(ErrorStrings.NotSupported_ValueCollectionSet);
                 }
 
                 public bool Contains(V item)
@@ -403,7 +392,7 @@ namespace ABI.System.Collections.Generic
 
                 bool ICollection<V>.Remove(V item)
                 {
-                    throw new NotSupportedException(WinRTRuntimeErrorStrings.NotSupported_ValueCollectionSet);
+                    throw new NotSupportedException(ErrorStrings.NotSupported_ValueCollectionSet);
                 }
 
                 IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
@@ -466,7 +455,7 @@ namespace ABI.System.Collections.Generic
                 if (!keyFound)
                 {
                     Debug.Assert(key != null);
-                    Exception e = new KeyNotFoundException(String.Format(WinRTRuntimeErrorStrings.Arg_KeyNotFoundWithKey, key.ToString()));
+                    Exception e = new KeyNotFoundException(ErrorStrings.Format(ErrorStrings.Arg_KeyNotFoundWithKey, key.ToString()));
                     e.SetHResult(ExceptionHelpers.E_BOUNDS);
                     throw e;
                 }
@@ -501,7 +490,7 @@ namespace ABI.System.Collections.Generic
                 if (!removed)
                 {
                     Debug.Assert(key != null);
-                    Exception e = new KeyNotFoundException(String.Format(WinRTRuntimeErrorStrings.Arg_KeyNotFoundWithKey, key.ToString()));
+                    Exception e = new KeyNotFoundException(ErrorStrings.Format(ErrorStrings.Arg_KeyNotFoundWithKey, key.ToString()));
                     e.SetHResult(ExceptionHelpers.E_BOUNDS);
                     throw e;
                 }
@@ -733,7 +722,7 @@ namespace ABI.System.Collections.Generic
             var __params = new object[] { ThisPtr, null, null };
             try
             {
-                __key = Marshaler<K>.CreateMarshaler2(key);
+                __key = Marshaler<K>.CreateMarshaler(key);
                 __params[1] = Marshaler<K>.GetAbi(__key);
                 _obj.Vftbl.Lookup_0.DynamicInvokeAbi(__params);
                 return Marshaler<V>.FromAbi(__params[2]);
@@ -751,7 +740,7 @@ namespace ABI.System.Collections.Generic
             var __params = new object[] { ThisPtr, null, null };
             try
             {
-                __key = Marshaler<K>.CreateMarshaler2(key);
+                __key = Marshaler<K>.CreateMarshaler(key);
                 __params[1] = Marshaler<K>.GetAbi(__key);
                 _obj.Vftbl.HasKey_2.DynamicInvokeAbi(__params);
                 return (byte)__params[2] != 0;
@@ -783,9 +772,9 @@ namespace ABI.System.Collections.Generic
             var __params = new object[] { ThisPtr, null, null, null };
             try
             {
-                __key = Marshaler<K>.CreateMarshaler2(key);
+                __key = Marshaler<K>.CreateMarshaler(key);
                 __params[1] = Marshaler<K>.GetAbi(__key);
-                __value = Marshaler<V>.CreateMarshaler2(value);
+                __value = Marshaler<V>.CreateMarshaler(value);
                 __params[2] = Marshaler<V>.GetAbi(__value);
                 _obj.Vftbl.Insert_4.DynamicInvokeAbi(__params);
                 return (byte)__params[3] != 0;
@@ -803,7 +792,7 @@ namespace ABI.System.Collections.Generic
             var __params = new object[] { ThisPtr, null };
             try
             {
-                __key = Marshaler<K>.CreateMarshaler2(key);
+                __key = Marshaler<K>.CreateMarshaler(key);
                 __params[1] = Marshaler<K>.GetAbi(__key);
                 _obj.Vftbl.Remove_5.DynamicInvokeAbi(__params);
             }
@@ -844,12 +833,7 @@ namespace ABI.System.Collections.Generic
         public global::System.Collections.Generic.IEnumerator<global::System.Collections.Generic.KeyValuePair<K, V>> GetEnumerator() => _FromMap.GetEnumerator();
         IEnumerator global::System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
     }
-#if EMBED
-    internal
-#else
-    public
-#endif
-    static class IDictionary_Delegates
+    public static class IDictionary_Delegates
     {
         public unsafe delegate int GetView_3(IntPtr thisPtr, out IntPtr __return_value__);
         public unsafe delegate int Clear_6(IntPtr thisPtr);

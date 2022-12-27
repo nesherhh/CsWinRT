@@ -1,6 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
+﻿// Example.cs
 namespace AuthoringDemo
 {
     public sealed class Example

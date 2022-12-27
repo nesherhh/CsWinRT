@@ -6,6 +6,7 @@
 *.c
 *.winmd
 *test*.xml
+build
 obj
 packages
 Debug
@@ -23,3 +24,4 @@ vs_buildtools.exe
 src/BenchmarkDotNet.Artifacts/*
 src/Tests/AuthoringWinUITest/AuthoringWinUITest (Package)/AuthoringWinUITest (Package).assets.cache
 *.trx
+/src/nuget.config

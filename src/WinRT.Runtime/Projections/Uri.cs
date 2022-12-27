@@ -1,5 +1,3 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
 
 using System;
 using System.Runtime.InteropServices;
@@ -39,7 +37,7 @@ namespace ABI.System
 
     [global::WinRT.ObjectReferenceWrapper(nameof(_obj))]
     [Guid("44A9796F-723E-4FDF-A218-033E75B0C084")]
-    internal sealed class WinRTUriRuntimeClassFactory
+    internal class WinRTUriRuntimeClassFactory
     {
         [Guid("44A9796F-723E-4FDF-A218-033E75B0C084")]
         [StructLayout(LayoutKind.Sequential)]
@@ -54,7 +52,7 @@ namespace ABI.System
 
         public static implicit operator WinRTUriRuntimeClassFactory(IObjectReference obj) => (obj != null) ? new WinRTUriRuntimeClassFactory(obj) : null;
         public static implicit operator WinRTUriRuntimeClassFactory(ObjectReference<Vftbl> obj) => (obj != null) ? new WinRTUriRuntimeClassFactory(obj) : null;
-        private readonly ObjectReference<Vftbl> _obj;
+        protected readonly ObjectReference<Vftbl> _obj;
         public IntPtr ThisPtr => _obj.ThisPtr;
         public ObjectReference<I> AsInterface<I>() => _obj.As<I>();
         public A As<A>() => _obj.AsType<A>();
@@ -66,44 +64,32 @@ namespace ABI.System
 
         public unsafe IObjectReference CreateUri(string uri)
         {
+            MarshalString __uri = default;
             IntPtr __retval = default;
-            MarshalString.Pinnable __uri = new(uri);
-            fixed (void* ___uri = __uri)
+            try
             {
-                global::WinRT.ExceptionHelpers.ThrowExceptionForHR(_obj.Vftbl.CreateUri_0(ThisPtr, MarshalString.GetAbi(ref __uri), out __retval));
+                __uri = MarshalString.CreateMarshaler(uri);
+                global::WinRT.ExceptionHelpers.ThrowExceptionForHR(_obj.Vftbl.CreateUri_0(ThisPtr, MarshalString.GetAbi(__uri), out __retval));
                 return ObjectReference<IUnknownVftbl>.Attach(ref __retval);
             }
-        }
-
-        public unsafe ObjectReferenceValue CreateUriForMarshaling(string uri)
-        {
-            IntPtr __retval = default;
-            MarshalString.Pinnable __uri = new(uri);
-            fixed (void* ___uri = __uri)
+            finally
             {
-                global::WinRT.ExceptionHelpers.ThrowExceptionForHR(_obj.Vftbl.CreateUri_0(ThisPtr, MarshalString.GetAbi(ref __uri), out __retval));
-                return new ObjectReferenceValue(__retval);
+                MarshalString.DisposeMarshaler(__uri);
             }
         }
     }
 
 
     [StructLayout(LayoutKind.Sequential)]
-#if EMBED
-    internal
-#else
-    public
-#endif
-    unsafe struct Uri
+    public unsafe struct Uri
     {
-        private sealed class ActivationFactory : BaseActivationFactory
+        private static WeakLazy<ActivationFactory> _uriActivationFactory = new WeakLazy<ActivationFactory>();
+
+        private class ActivationFactory : BaseActivationFactory
         {
             public ActivationFactory() : base("Windows.Foundation", "Windows.Foundation.Uri")
             {
             }
-
-            internal static WinRTUriRuntimeClassFactory Instance = 
-                new ActivationFactory()._As<WinRTUriRuntimeClassFactory.Vftbl>();
         }
 
         public static IObjectReference CreateMarshaler(global::System.Uri value)
@@ -113,17 +99,8 @@ namespace ABI.System
                 return null;
             }
 
-            return ActivationFactory.Instance.CreateUri(value.OriginalString);
-        }
-
-        public static ObjectReferenceValue CreateMarshaler2(global::System.Uri value)
-        {
-            if (value is null)
-            {
-                return new ObjectReferenceValue();
-            }
-
-            return ActivationFactory.Instance.CreateUriForMarshaling(value.OriginalString);
+            WinRTUriRuntimeClassFactory factory = _uriActivationFactory.Value._As<WinRTUriRuntimeClassFactory.Vftbl>();
+            return factory.CreateUri(value.OriginalString);
         }
 
         public static IntPtr GetAbi(IObjectReference m) => m?.ThisPtr ?? IntPtr.Zero;
@@ -135,10 +112,11 @@ namespace ABI.System
                 return null;
             }
 
+            using var uri = ObjectReference<ABI.Windows.Foundation.IUriRuntimeClassVftbl>.FromAbi(ptr);
             IntPtr rawUri = IntPtr.Zero;
             try
             {
-                ExceptionHelpers.ThrowExceptionForHR((**(ABI.Windows.Foundation.IUriRuntimeClassVftbl**)ptr).get_RawUri_10(ptr, &rawUri));
+                ExceptionHelpers.ThrowExceptionForHR(uri.Vftbl.get_RawUri_10(uri.ThisPtr, &rawUri));
                 return new global::System.Uri(MarshalString.FromAbi(rawUri));
             }
             finally
@@ -149,7 +127,8 @@ namespace ABI.System
 
         public static unsafe void CopyManaged(global::System.Uri o, IntPtr dest)
         {
-            *(IntPtr*)dest.ToPointer() = CreateMarshaler2(o).Detach();
+            using var objRef = CreateMarshaler(o);
+            *(IntPtr*)dest.ToPointer() = objRef?.GetRef() ?? IntPtr.Zero;
         }
 
         public static IntPtr FromManaged(global::System.Uri value)
@@ -158,7 +137,7 @@ namespace ABI.System
             {
                 return IntPtr.Zero;
             }
-            return CreateMarshaler2(value).Detach();
+            return CreateMarshaler(value).GetRef();
         }
 
         public static void DisposeMarshaler(IObjectReference m) { m?.Dispose(); }

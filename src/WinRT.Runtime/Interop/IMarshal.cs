@@ -1,6 +1,3 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -33,7 +30,7 @@ namespace WinRT.Interop
 namespace ABI.WinRT.Interop
 {
     [Guid("00000003-0000-0000-c000-000000000046")]
-    internal sealed class IMarshal
+    internal class IMarshal
     {
         internal static readonly Guid IID = new(0x00000003, 0, 0, 0xc0, 0, 0, 0, 0, 0, 0, 0x46);
 
@@ -42,14 +39,14 @@ namespace ABI.WinRT.Interop
 
         private static readonly string NotImplemented_NativeRoutineNotFound = "A native library routine was not found: {0}.";
 
-        internal static readonly Lazy<Guid> IID_InProcFreeThreadedMarshaler = new Lazy<Guid>(Vftbl.GetInProcFreeThreadedMarshalerIID);
+        internal static Lazy<Guid> IID_InProcFreeThreadedMarshaler = new Lazy<Guid>(Vftbl.GetInProcFreeThreadedMarshalerIID);
 
         [Guid("00000003-0000-0000-c000-000000000046")]
         public unsafe struct Vftbl
         {
             internal global::WinRT.Interop.IUnknownVftbl IUnknownVftbl;
 
-#if !NET
+#if NETSTANDARD2_0
             private void* _GetUnmarshalClass_0;
             public delegate* unmanaged[Stdcall]<IntPtr, Guid*, IntPtr, global::WinRT.Interop.MSHCTX, IntPtr, global::WinRT.Interop.MSHLFLAGS, Guid*, int> GetUnmarshalClass_0 { get => (delegate* unmanaged[Stdcall]<IntPtr, Guid*, IntPtr, global::WinRT.Interop.MSHCTX, IntPtr, global::WinRT.Interop.MSHLFLAGS, Guid*, int>)_GetUnmarshalClass_0; set => _GetUnmarshalClass_0 = value; }
             private void* _GetMarshalSizeMax_1;
@@ -78,7 +75,7 @@ namespace ABI.WinRT.Interop
 
             static Vftbl()
             {
-#if !NET
+#if NETSTANDARD2_0
                 AbiToProjectionVftable = new Vftbl
                 {
                     IUnknownVftbl = global::WinRT.Interop.IUnknownVftbl.AbiToProjectionVftbl,
@@ -132,13 +129,13 @@ namespace ABI.WinRT.Interop
             {
                 EnsureHasFreeThreadedMarshaler();
 
-                Guid iid_IUnknown = IUnknownVftbl.IID;
+                Guid iid_IUnknown = typeof(IUnknownVftbl).GUID;
                 Guid iid_unmarshalClass;
                 t_freeThreadedMarshaler.GetUnmarshalClass(&iid_IUnknown, IntPtr.Zero, MSHCTX.InProc, IntPtr.Zero, MSHLFLAGS.Normal, &iid_unmarshalClass);
                 return iid_unmarshalClass;
             }
 
-#if NET
+#if !NETSTANDARD2_0
             [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
 #endif
             private static int Do_Abi_GetUnmarshalClass_0(IntPtr thisPtr, Guid* riid, IntPtr pv, global::WinRT.Interop.MSHCTX dwDestContext, IntPtr pvDestContext, global::WinRT.Interop.MSHLFLAGS mshlFlags, Guid* pCid)
@@ -156,7 +153,7 @@ namespace ABI.WinRT.Interop
                 return 0;
             }
 
-#if NET
+#if !NETSTANDARD2_0
             [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
 #endif
             private static int Do_Abi_GetMarshalSizeMax_1(IntPtr thisPtr, Guid* riid, IntPtr pv, global::WinRT.Interop.MSHCTX dwDestContext, IntPtr pvDestContext, global::WinRT.Interop.MSHLFLAGS mshlflags, uint* pSize)
@@ -174,7 +171,7 @@ namespace ABI.WinRT.Interop
                 return 0;
             }
 
-#if NET
+#if !NETSTANDARD2_0
             [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
 #endif
             private static int Do_Abi_MarshalInterface_2(IntPtr thisPtr, IntPtr pStm, Guid* riid, IntPtr pv, global::WinRT.Interop.MSHCTX dwDestContext, IntPtr pvDestContext, global::WinRT.Interop.MSHLFLAGS mshlflags)
@@ -191,7 +188,7 @@ namespace ABI.WinRT.Interop
                 return 0;
             }
 
-#if NET
+#if !NETSTANDARD2_0
             [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
 #endif
             private static int Do_Abi_UnmarshalInterface_3(IntPtr thisPtr, IntPtr pStm, Guid* riid, IntPtr* ppv)
@@ -209,7 +206,7 @@ namespace ABI.WinRT.Interop
                 return 0;
             }
 
-#if NET
+#if !NETSTANDARD2_0
             [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
 #endif
             private static int Do_Abi_ReleaseMarshalData_4(IntPtr thisPtr, IntPtr pStm)
@@ -226,7 +223,7 @@ namespace ABI.WinRT.Interop
                 return 0;
             }
 
-#if NET
+#if !NETSTANDARD2_0
             [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
 #endif
             private static int Do_Abi_DisconnectObject_5(IntPtr thisPtr, uint dwReserved)
@@ -246,12 +243,12 @@ namespace ABI.WinRT.Interop
         internal static ObjectReference<Vftbl> FromAbi(IntPtr thisPtr) => ObjectReference<Vftbl>.FromAbi(thisPtr);
 
         public static implicit operator IMarshal(IObjectReference obj) => (obj != null) ? new IMarshal(obj) : null;
-        private readonly ObjectReference<Vftbl> _obj;
+        protected readonly ObjectReference<Vftbl> _obj;
         public IObjectReference ObjRef { get => _obj; }
         public IntPtr ThisPtr => _obj.ThisPtr;
         public ObjectReference<I> AsInterface<I>() => _obj.As<I>();
         public A As<A>() => _obj.AsType<A>();
-        public IMarshal(IObjectReference obj) : this(obj.As<Vftbl>(IID)) { }
+        public IMarshal(IObjectReference obj) : this(obj.As<Vftbl>()) { }
         internal IMarshal(ObjectReference<Vftbl> obj)
         {
             _obj = obj;

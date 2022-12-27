@@ -12,10 +12,10 @@ namespace System.Threading.Tasks
     using System.Threading.Tasks;
     using global::Windows.Foundation;
 
-#if NET
+#if !NETSTANDARD2_0
     [global::System.Runtime.Versioning.SupportedOSPlatform("windows10.0.10240.0")]
 #endif
-    internal sealed class TaskToAsyncOperationWithProgressAdapter<TResult, TProgress>
+    internal class TaskToAsyncOperationWithProgressAdapter<TResult, TProgress>
                             : TaskToAsyncInfoAdapter<AsyncOperationWithProgressCompletedHandler<TResult, TProgress>,
                                                      AsyncOperationProgressHandler<TResult, TProgress>,
                                                      TResult,
@@ -44,7 +44,7 @@ namespace System.Threading.Tasks
         {
         }
 
-        public TResult GetResults()
+        public virtual TResult GetResults()
         {
             return GetResultsInternal();
         }

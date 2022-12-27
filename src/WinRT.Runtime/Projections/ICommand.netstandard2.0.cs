@@ -1,10 +1,11 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 using WinRT;
 using WinRT.Interop;
 
@@ -12,12 +13,7 @@ namespace ABI.System.Windows.Input
 {
     [global::WinRT.ObjectReferenceWrapper(nameof(_obj)), EditorBrowsable(EditorBrowsableState.Never)]
     [Guid("E5AF3542-CA67-4081-995B-709DD13792DF")]
-#if EMBED
-    internal
-#else
-    public
-#endif
-    unsafe class ICommand : global::System.Windows.Input.ICommand
+    public unsafe class ICommand : global::System.Windows.Input.ICommand
     {
         [Guid("E5AF3542-CA67-4081-995B-709DD13792DF")]
         public struct Vftbl
@@ -89,14 +85,8 @@ namespace ABI.System.Windows.Input
                 return 0;
             }
 
-            private volatile static ConditionalWeakTable<global::System.Windows.Input.ICommand, global::WinRT.EventRegistrationTokenTable<global::System.EventHandler>> _canExecuteChanged_TokenTables;
-            private static ConditionalWeakTable<global::System.Windows.Input.ICommand, global::WinRT.EventRegistrationTokenTable<global::System.EventHandler>> MakeConditionalWeakTable()
-            {
-                global::System.Threading.Interlocked.CompareExchange(ref _canExecuteChanged_TokenTables, new(), null);
-                return _canExecuteChanged_TokenTables;
-            }
-
-            private static ConditionalWeakTable<global::System.Windows.Input.ICommand, global::WinRT.EventRegistrationTokenTable<global::System.EventHandler>> _CanExecuteChanged_TokenTables => _canExecuteChanged_TokenTables ?? MakeConditionalWeakTable();
+            private readonly static Lazy<ConditionalWeakTable<global::System.Windows.Input.ICommand, global::WinRT.EventRegistrationTokenTable<global::System.EventHandler>>> _CanExecuteChanged_TokenTablesLazy = new();
+            private static ConditionalWeakTable<global::System.Windows.Input.ICommand, global::WinRT.EventRegistrationTokenTable<global::System.EventHandler>> _CanExecuteChanged_TokenTables => _CanExecuteChanged_TokenTablesLazy.Value;
 
             private static unsafe int Do_Abi_add_CanExecuteChanged_0(IntPtr thisPtr, IntPtr handler, global::WinRT.EventRegistrationToken* token)
             {
@@ -155,11 +145,11 @@ namespace ABI.System.Windows.Input
 
         public unsafe bool CanExecute(object parameter)
         {
-            ObjectReferenceValue __parameter = default;
+            IObjectReference __parameter = default;
             byte __retval = default;
             try
             {
-                __parameter = MarshalInspectable<object>.CreateMarshaler2(parameter);
+                __parameter = MarshalInspectable<object>.CreateMarshaler(parameter);
                 global::WinRT.ExceptionHelpers.ThrowExceptionForHR(_obj.Vftbl.CanExecute_2(ThisPtr, MarshalInspectable<object>.GetAbi(__parameter), out __retval));
                 return __retval != 0;
             }
@@ -171,10 +161,10 @@ namespace ABI.System.Windows.Input
 
         public unsafe void Execute(object parameter)
         {
-            ObjectReferenceValue __parameter = default;
+            IObjectReference __parameter = default;
             try
             {
-                __parameter = MarshalInspectable<object>.CreateMarshaler2(parameter);
+                __parameter = MarshalInspectable<object>.CreateMarshaler(parameter);
                 global::WinRT.ExceptionHelpers.ThrowExceptionForHR(_obj.Vftbl.Execute_3(ThisPtr, MarshalInspectable<object>.GetAbi(__parameter)));
             }
             finally
@@ -199,12 +189,7 @@ namespace ABI.System.Windows.Input
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-#if EMBED
-    internal
-#else
-    public
-#endif
-    static class ICommand_Delegates
+    public static class ICommand_Delegates
     {
         public unsafe delegate int add_CanExecuteChanged_0(IntPtr thisPtr, IntPtr handler, global::WinRT.EventRegistrationToken* token);
         public unsafe delegate int CanExecute_2(IntPtr thisPtr, IntPtr parameter, byte* result);

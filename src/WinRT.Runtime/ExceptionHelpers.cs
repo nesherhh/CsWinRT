@@ -1,7 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
-using System;
+﻿using System;
 using System.Collections;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
@@ -9,13 +6,7 @@ using WinRT.Interop;
 
 namespace WinRT
 {
-
-#if EMBED
-    internal
-#else 
-    public
-#endif
-    static unsafe class ExceptionHelpers
+    public static unsafe class ExceptionHelpers
     {
         private const int COR_E_OBJECTDISPOSED = unchecked((int)0x80131622);
         private const int RO_E_CLOSED = unchecked((int)0x80000013);
@@ -259,7 +250,7 @@ See https://aka.ms/cswinrt/interop#windows-sdk",
         // the exception instance in the app to hold the error object alive.
         //
         [Serializable]
-        internal sealed class __RestrictedErrorObject
+        internal class __RestrictedErrorObject
         {
             // Hold the error object instance but don't serialize/deserialize it
             [NonSerialized]
@@ -375,12 +366,7 @@ See https://aka.ms/cswinrt/interop#windows-sdk",
         }
     }
 
-#if EMBED
-    internal
-#else
-    public
-#endif
-    static class ExceptionExtensions
+    public static class ExceptionExtensions
     {
         public static void SetHResult(this Exception ex, int value)
         {
@@ -403,6 +389,30 @@ See https://aka.ms/cswinrt/interop#windows-sdk",
             return e;
         }
     }
+
+    internal class ErrorStrings
+    {
+        internal static string Format(string format, params object[] args) => String.Format(format, args);
+
+        internal static readonly string Arg_IndexOutOfRangeException = "Index was outside the bounds of the array.";
+        internal static readonly string Arg_KeyNotFound = "The given key was not present in the dictionary.";
+        internal static readonly string Arg_KeyNotFoundWithKey = "The given key '{0}' was not present in the dictionary.";
+        internal static readonly string Arg_RankMultiDimNotSupported = "Only single dimensional arrays are supported for the requested action.";
+        internal static readonly string Argument_AddingDuplicate = "An item with the same key has already been added.";
+        internal static readonly string Argument_AddingDuplicateWithKey = "An item with the same key has already been added. Key: {0}";
+        internal static readonly string Argument_IndexOutOfArrayBounds = "The specified index is out of bounds of the specified array.";
+        internal static readonly string Argument_InsufficientSpaceToCopyCollection = "The specified space is not sufficient to copy the elements from this Collection.";
+        internal static readonly string ArgumentOutOfRange_Index = "Index was out of range. Must be non-negative and less than the size of the collection.";
+        internal static readonly string ArgumentOutOfRange_IndexLargerThanMaxValue = "This collection cannot work with indices larger than Int32.MaxValue - 1 (0x7FFFFFFF - 1).";
+        internal static readonly string InvalidOperation_CannotRemoveLastFromEmptyCollection = "Cannot remove the last element from an empty collection.";
+        internal static readonly string InvalidOperation_CollectionBackingDictionaryTooLarge = "The collection backing this Dictionary contains too many elements.";
+        internal static readonly string InvalidOperation_CollectionBackingListTooLarge = "The collection backing this List contains too many elements.";
+        internal static readonly string InvalidOperation_EnumEnded = "Enumeration already finished.";
+        internal static readonly string InvalidOperation_EnumFailedVersion = "Collection was modified; enumeration operation may not execute.";
+        internal static readonly string InvalidOperation_EnumNotStarted = "Enumeration has not started. Call MoveNext.";
+        internal static readonly string NotSupported_KeyCollectionSet = "Mutating a key collection derived from a dictionary is not allowed.";
+        internal static readonly string NotSupported_ValueCollectionSet = "Mutating a value collection derived from a dictionary is not allowed.";
+    }
 }
 
 namespace Microsoft.UI.Xaml
@@ -411,12 +421,7 @@ namespace Microsoft.UI.Xaml
     namespace Automation
     {
         [Serializable]
-#if EMBED
-        internal
-#else
-        public
-#endif
-        class ElementNotAvailableException : Exception
+        public class ElementNotAvailableException : Exception
         {
             public ElementNotAvailableException()
                 : base("The element is not available.")
@@ -442,12 +447,7 @@ namespace Microsoft.UI.Xaml
             }
         }
 
-#if EMBED
-        internal
-#else
-        public
-#endif
-        class ElementNotEnabledException : Exception
+        public class ElementNotEnabledException : Exception
         {
             public ElementNotEnabledException()
                 : base("The element is not enabled.")
@@ -470,13 +470,7 @@ namespace Microsoft.UI.Xaml
     }
     namespace Markup
     {
-
-#if EMBED
-        internal
-#else 
-        public
-#endif
-        class XamlParseException : Exception
+        public class XamlParseException : Exception
         {
             public XamlParseException()
                 : base("XAML parsing failed.")
@@ -498,12 +492,7 @@ namespace Microsoft.UI.Xaml
         }
     }
     [Serializable]
-#if EMBED
-    internal
-#else
-    public
-#endif
-    class LayoutCycleException : Exception
+    public class LayoutCycleException : Exception
     {
         public LayoutCycleException()
             : base("A cycle occurred while laying out the GUI.")

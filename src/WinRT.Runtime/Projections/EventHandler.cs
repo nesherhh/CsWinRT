@@ -1,25 +1,19 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 using WinRT;
 using WinRT.Interop;
 
 namespace ABI.System
 {
     [Guid("9DE1C535-6AE1-11E0-84E1-18A905BCC53F"), EditorBrowsable(EditorBrowsableState.Never)]
-#if EMBED
-    internal
-#else
-    public
-#endif
-    static class EventHandler<T>
+    public static class EventHandler<T>
     {
         public static Guid PIID = GuidGenerator.CreateIID(typeof(global::System.EventHandler<T>));
         private static readonly global::System.Type Abi_Invoke_Type = Expression.GetDelegateType(new global::System.Type[] { typeof(void*), typeof(IntPtr), Marshaler<T>.AbiType, typeof(int) });
@@ -44,29 +38,22 @@ namespace ABI.System
         public static global::System.Delegate AbiInvokeDelegate { get; }
 
         public static unsafe IObjectReference CreateMarshaler(global::System.EventHandler<T> managedDelegate) =>
-            managedDelegate is null ? null : MarshalDelegate.CreateMarshaler(managedDelegate, PIID);
-
-        public static unsafe ObjectReferenceValue CreateMarshaler2(global::System.EventHandler<T> managedDelegate) => 
-            MarshalDelegate.CreateMarshaler2(managedDelegate, PIID);
+            managedDelegate is null ? null : MarshalDelegate.CreateMarshaler(managedDelegate, GuidGenerator.GetIID(typeof(EventHandler<T>)));
 
         public static IntPtr GetAbi(IObjectReference value) =>
             value is null ? IntPtr.Zero : MarshalInterfaceHelper<global::System.EventHandler<T>>.GetAbi(value);
 
         public static unsafe global::System.EventHandler<T> FromAbi(IntPtr nativeDelegate)
         {
-            return MarshalDelegate.FromAbi<global::System.EventHandler<T>>(nativeDelegate);
-        }
-
-        public static global::System.EventHandler<T> CreateRcw(IntPtr ptr)
-        {
-            return new global::System.EventHandler<T>(new NativeDelegateWrapper(ComWrappersSupport.GetObjectReferenceForInterface<IDelegateVftbl>(ptr, PIID)).Invoke);
+            var abiDelegate = ComWrappersSupport.GetObjectReferenceForInterface(nativeDelegate)?.As<IDelegateVftbl>(GuidGenerator.GetIID(typeof(EventHandler<T>)));
+            return abiDelegate is null ? null : (global::System.EventHandler<T>)ComWrappersSupport.TryRegisterObjectForInterface(new global::System.EventHandler<T>(new NativeDelegateWrapper(abiDelegate).Invoke), nativeDelegate);
         }
 
         [global::WinRT.ObjectReferenceWrapper(nameof(_nativeDelegate))]
-#if !NET
-        private sealed class NativeDelegateWrapper
+#if NETSTANDARD2_0
+        private class NativeDelegateWrapper
 #else
-        private sealed class NativeDelegateWrapper : IWinRTObject
+        private class NativeDelegateWrapper : IWinRTObject
 #endif
         {
             private readonly ObjectReference<global::WinRT.Interop.IDelegateVftbl> _nativeDelegate;
@@ -76,38 +63,27 @@ namespace ABI.System
                 _nativeDelegate = nativeDelegate;
             }
 
-#if NET
+#if !NETSTANDARD2_0
             IObjectReference IWinRTObject.NativeObject => _nativeDelegate;
             bool IWinRTObject.HasUnwrappableNativeObject => true;
-            private volatile ConcurrentDictionary<RuntimeTypeHandle, IObjectReference> _queryInterfaceCache;
-            private ConcurrentDictionary<RuntimeTypeHandle, IObjectReference> MakeQueryInterfaceCache()
-            {
-                global::System.Threading.Interlocked.CompareExchange(ref _queryInterfaceCache, new ConcurrentDictionary<RuntimeTypeHandle, IObjectReference>(), null);
-                return _queryInterfaceCache;
-            }
-            ConcurrentDictionary<RuntimeTypeHandle, IObjectReference> IWinRTObject.QueryInterfaceCache => _queryInterfaceCache ?? MakeQueryInterfaceCache();
-
-            private volatile ConcurrentDictionary<RuntimeTypeHandle, object> _additionalTypeData;
-            private ConcurrentDictionary<RuntimeTypeHandle, object> MakeAdditionalTypeData()
-            {
-                global::System.Threading.Interlocked.CompareExchange(ref _additionalTypeData, new ConcurrentDictionary<RuntimeTypeHandle, object>(), null);
-                return _additionalTypeData;
-            }
-            ConcurrentDictionary<RuntimeTypeHandle, object> IWinRTObject.AdditionalTypeData => _additionalTypeData ?? MakeAdditionalTypeData();
+            private Lazy<ConcurrentDictionary<RuntimeTypeHandle, IObjectReference>> _lazyQueryInterfaceCache = new();
+            ConcurrentDictionary<RuntimeTypeHandle, IObjectReference> IWinRTObject.QueryInterfaceCache => _lazyQueryInterfaceCache.Value;
+            private Lazy<ConcurrentDictionary<RuntimeTypeHandle, object>> _lazyAdditionalTypeData = new();
+            ConcurrentDictionary<RuntimeTypeHandle, object> IWinRTObject.AdditionalTypeData => _lazyAdditionalTypeData.Value;
 #endif
 
             public void Invoke(object sender, T args)
             {
                 IntPtr ThisPtr = _nativeDelegate.ThisPtr;
                 var abiInvoke = Marshal.GetDelegateForFunctionPointer(_nativeDelegate.Vftbl.Invoke, Abi_Invoke_Type);
-                ObjectReferenceValue __sender = default;
+                IObjectReference __sender = default;
                 object __args = default;
                 var __params = new object[] { ThisPtr, null, null };
                 try
                 {
-                    __sender = MarshalInspectable<object>.CreateMarshaler2(sender);
+                    __sender = MarshalInspectable<object>.CreateMarshaler(sender);
                     __params[1] = MarshalInspectable<object>.GetAbi(__sender);
-                    __args = Marshaler<T>.CreateMarshaler2(args);
+                    __args = Marshaler<T>.CreateMarshaler(args);
                     __params[2] = Marshaler<T>.GetAbi(__args);
                     abiInvoke.DynamicInvokeAbi(__params);
                 }
@@ -116,11 +92,12 @@ namespace ABI.System
                     MarshalInspectable<object>.DisposeMarshaler(__sender);
                     Marshaler<T>.DisposeMarshaler(__args);
                 }
+
             }
         }
 
-        public static IntPtr FromManaged(global::System.EventHandler<T> managedDelegate) => 
-            CreateMarshaler2(managedDelegate).Detach();
+        public static IntPtr FromManaged(global::System.EventHandler<T> managedDelegate) =>
+            CreateMarshaler(managedDelegate)?.GetRef() ?? IntPtr.Zero;
 
         public static void DisposeMarshaler(IObjectReference value) => MarshalInterfaceHelper<global::System.EventHandler<T>>.DisposeMarshaler(value);
 
@@ -130,15 +107,10 @@ namespace ABI.System
         {
             try
             {
-#if NET
-                var invoke = ComWrappersSupport.FindObject<global::System.EventHandler<T>>(new IntPtr(thisPtr));
-                invoke.Invoke(MarshalInspectable<object>.FromAbi(sender), Marshaler<T>.FromAbi(args));
-#else
-                global::WinRT.ComWrappersSupport.MarshalDelegateInvoke(new IntPtr(thisPtr), (global::System.EventHandler<T> invoke) =>
+                global::WinRT.ComWrappersSupport.MarshalDelegateInvoke(new IntPtr(thisPtr), (global::System.Delegate invoke) =>
                 {
-                    invoke.Invoke(MarshalInspectable<object>.FromAbi(sender), Marshaler<T>.FromAbi(args));
+                    invoke.DynamicInvoke(MarshalInspectable<object>.FromAbi(sender), Marshaler<T>.FromAbi(args));
                 });
-#endif
             }
             catch (global::System.Exception __exception__)
             {
@@ -152,7 +124,7 @@ namespace ABI.System
     [Guid("c50898f6-c536-5f47-8583-8b2c2438a13b")]
     internal static class EventHandler
     {
-#if !NET
+#if NETSTANDARD2_0
         private delegate int Abi_Invoke(IntPtr thisPtr, IntPtr sender, IntPtr args);
 #endif
 
@@ -164,7 +136,7 @@ namespace ABI.System
             AbiToProjectionVftable = new global::WinRT.Interop.IDelegateVftbl
             {
                 IUnknownVftbl = global::WinRT.Interop.IUnknownVftbl.AbiToProjectionVftbl,
-#if !NET
+#if NETSTANDARD2_0
                 Invoke = Marshal.GetFunctionPointerForDelegate(AbiInvokeDelegate = (Abi_Invoke)Do_Abi_Invoke)
 #else
                 Invoke = (IntPtr)(delegate* unmanaged[Stdcall]<IntPtr, IntPtr, IntPtr, int>)&Do_Abi_Invoke
@@ -175,36 +147,27 @@ namespace ABI.System
             AbiToProjectionVftablePtr = nativeVftbl;
         }
 
-#if !NET
+#if NETSTANDARD2_0
         public static global::System.Delegate AbiInvokeDelegate { get; }
 #endif
 
-        private static readonly Guid IID = new(0xc50898f6, 0xc536, 0x5f47, 0x85, 0x83, 0x8b, 0x2c, 0x24, 0x38, 0xa1, 0x3b);
-
         public static unsafe IObjectReference CreateMarshaler(global::System.EventHandler managedDelegate) =>
-            managedDelegate is null ? null : MarshalDelegate.CreateMarshaler(managedDelegate, IID);
-
-        public static unsafe ObjectReferenceValue CreateMarshaler2(global::System.EventHandler managedDelegate) =>
-            MarshalDelegate.CreateMarshaler2(managedDelegate, IID);
+            managedDelegate is null ? null : MarshalDelegate.CreateMarshaler(managedDelegate, GuidGenerator.GetIID(typeof(EventHandler)));
 
         public static IntPtr GetAbi(IObjectReference value) =>
             value is null ? IntPtr.Zero : MarshalInterfaceHelper<global::System.EventHandler<object>>.GetAbi(value);
 
         public static unsafe global::System.EventHandler FromAbi(IntPtr nativeDelegate)
         {
-            return MarshalDelegate.FromAbi<global::System.EventHandler>(nativeDelegate);
-        }
-
-        public static global::System.EventHandler CreateRcw(IntPtr ptr)
-        {
-            return new global::System.EventHandler(new NativeDelegateWrapper(ComWrappersSupport.GetObjectReferenceForInterface<IDelegateVftbl>(ptr, IID)).Invoke);
+            var abiDelegate = ComWrappersSupport.GetObjectReferenceForInterface(nativeDelegate)?.As<IDelegateVftbl>(GuidGenerator.GetIID(typeof(EventHandler)));
+            return abiDelegate is null ? null : (global::System.EventHandler)ComWrappersSupport.TryRegisterObjectForInterface(new global::System.EventHandler(new NativeDelegateWrapper(abiDelegate).Invoke), nativeDelegate);
         }
 
         [global::WinRT.ObjectReferenceWrapper(nameof(_nativeDelegate))]
-#if !NET
-        private sealed class NativeDelegateWrapper
+#if NETSTANDARD2_0
+        private class NativeDelegateWrapper
 #else
-        private sealed class NativeDelegateWrapper : IWinRTObject
+        private class NativeDelegateWrapper : IWinRTObject
 #endif
         {
             private readonly ObjectReference<global::WinRT.Interop.IDelegateVftbl> _nativeDelegate;
@@ -214,40 +177,29 @@ namespace ABI.System
                 _nativeDelegate = nativeDelegate;
             }
 
-#if NET
+#if !NETSTANDARD2_0
             IObjectReference IWinRTObject.NativeObject => _nativeDelegate;
             bool IWinRTObject.HasUnwrappableNativeObject => true;
-            private volatile ConcurrentDictionary<RuntimeTypeHandle, IObjectReference> _queryInterfaceCache;
-            private ConcurrentDictionary<RuntimeTypeHandle, IObjectReference> MakeQueryInterfaceCache()
-            {
-                global::System.Threading.Interlocked.CompareExchange(ref _queryInterfaceCache, new ConcurrentDictionary<RuntimeTypeHandle, IObjectReference>(), null);
-                return _queryInterfaceCache;
-            }
-            ConcurrentDictionary<RuntimeTypeHandle, IObjectReference> IWinRTObject.QueryInterfaceCache => _queryInterfaceCache ?? MakeQueryInterfaceCache();
-
-            private volatile ConcurrentDictionary<RuntimeTypeHandle, object> _additionalTypeData;
-            private ConcurrentDictionary<RuntimeTypeHandle, object> MakeAdditionalTypeData()
-            {
-                global::System.Threading.Interlocked.CompareExchange(ref _additionalTypeData, new ConcurrentDictionary<RuntimeTypeHandle, object>(), null);
-                return _additionalTypeData;
-            }
-            ConcurrentDictionary<RuntimeTypeHandle, object> IWinRTObject.AdditionalTypeData => _additionalTypeData ?? MakeAdditionalTypeData();
+            private Lazy<ConcurrentDictionary<RuntimeTypeHandle, IObjectReference>> _lazyQueryInterfaceCache = new();
+            ConcurrentDictionary<RuntimeTypeHandle, IObjectReference> IWinRTObject.QueryInterfaceCache => _lazyQueryInterfaceCache.Value;
+            private Lazy<ConcurrentDictionary<RuntimeTypeHandle, object>> _lazyAdditionalTypeData = new();
+            ConcurrentDictionary<RuntimeTypeHandle, object> IWinRTObject.AdditionalTypeData => _lazyAdditionalTypeData.Value;
 #endif
 
             public unsafe void Invoke(object sender, EventArgs args)
             {
                 IntPtr ThisPtr = _nativeDelegate.ThisPtr;
-#if !NET
+#if NETSTANDARD2_0
                 var abiInvoke = Marshal.GetDelegateForFunctionPointer<Abi_Invoke>(_nativeDelegate.Vftbl.Invoke);
 #else
                 var abiInvoke = (delegate* unmanaged[Stdcall]<IntPtr, IntPtr, IntPtr, int>)(_nativeDelegate.Vftbl.Invoke);
 #endif
-                ObjectReferenceValue __sender = default;
-                ObjectReferenceValue __args = default;
+                IObjectReference __sender = default;
+                IObjectReference __args = default;
                 try
                 {
-                    __sender = MarshalInspectable<object>.CreateMarshaler2(sender);
-                    __args = MarshalInspectable<EventArgs>.CreateMarshaler2(args);
+                    __sender = MarshalInspectable<object>.CreateMarshaler(sender);
+                    __args = MarshalInspectable<EventArgs>.CreateMarshaler(args);
                     global::WinRT.ExceptionHelpers.ThrowExceptionForHR(abiInvoke(
                         ThisPtr,
                         MarshalInspectable<object>.GetAbi(__sender),
@@ -261,33 +213,26 @@ namespace ABI.System
             }
         }
 
-        public static IntPtr FromManaged(global::System.EventHandler managedDelegate) => 
-            CreateMarshaler2(managedDelegate).Detach();
+        public static IntPtr FromManaged(global::System.EventHandler managedDelegate) =>
+            CreateMarshaler(managedDelegate)?.GetRef() ?? IntPtr.Zero;
 
         public static void DisposeMarshaler(IObjectReference value) => MarshalInterfaceHelper<global::System.EventHandler<object>>.DisposeMarshaler(value);
 
         public static void DisposeAbi(IntPtr abi) => MarshalInterfaceHelper<global::System.EventHandler<object>>.DisposeAbi(abi);
 
-#if NET
+#if !NETSTANDARD2_0
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
 #endif
         private static unsafe int Do_Abi_Invoke(IntPtr thisPtr, IntPtr sender, IntPtr args)
         {
             try
             {
-#if NET
-                var invoke = ComWrappersSupport.FindObject<global::System.EventHandler>(thisPtr);
-                invoke.Invoke(
-                    MarshalInspectable<object>.FromAbi(sender),
-                    MarshalInspectable<object>.FromAbi(args) as EventArgs ?? EventArgs.Empty);
-#else
-                global::WinRT.ComWrappersSupport.MarshalDelegateInvoke(thisPtr, (global::System.EventHandler invoke) =>
+                global::WinRT.ComWrappersSupport.MarshalDelegateInvoke(thisPtr, (global::System.Delegate invoke) =>
                 {
-                    invoke.Invoke(
+                    invoke.DynamicInvoke(
                         MarshalInspectable<object>.FromAbi(sender),
                         MarshalInspectable<object>.FromAbi(args) as EventArgs ?? EventArgs.Empty);
                 });
-#endif
             }
             catch (global::System.Exception __exception__)
             {
@@ -307,8 +252,14 @@ namespace ABI.System
         {
         }
 
-        protected override ObjectReferenceValue CreateMarshaler(global::System.EventHandler del) => 
-            EventHandler.CreateMarshaler2(del);
+        protected override IObjectReference CreateMarshaler(global::System.EventHandler del) =>
+            del is null ? null : EventHandler.CreateMarshaler(del);
+
+        protected override void DisposeMarshaler(IObjectReference marshaler) =>
+            EventHandler.DisposeMarshaler(marshaler);
+
+        protected override IntPtr GetAbi(IObjectReference marshaler) =>
+            marshaler is null ? IntPtr.Zero : EventHandler.GetAbi(marshaler);
 
         protected override State CreateEventState() =>
             new EventState(_obj.ThisPtr, _index);
@@ -324,7 +275,7 @@ namespace ABI.System
             {
                 global::System.EventHandler handler = (global::System.Object obj, global::System.EventArgs e) =>
                 {
-                    var localDel = (global::System.EventHandler) del;
+                    var localDel = del;
                     if (localDel != null)
                         localDel.Invoke(obj, e);
                 };
